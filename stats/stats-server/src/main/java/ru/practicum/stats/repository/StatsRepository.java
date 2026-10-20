@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
 
-    @Query("select new ru.practicum.stats.projection.ViewStats(h.app, h.uri, count(h)) "
+    @Query("select new ru.practicum.stats.model.projection.ViewStats(h.app, h.uri, count(h)) "
             + "from EndpointHit h "
             + "where h.timestamp between :start and :end "
             + "group by h.app, h.uri "
@@ -19,7 +19,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
     List<ViewStats> findStats(@Param("start") LocalDateTime start,
                               @Param("end") LocalDateTime end);
 
-    @Query("select new ru.practicum.stats.projection.ViewStats(h.app, h.uri, count(h)) "
+    @Query("select new ru.practicum.stats.model.projection.ViewStats(h.app, h.uri, count(h)) "
             + "from EndpointHit h "
             + "where h.timestamp between :start and :end "
             + "and h.uri in :uris "
@@ -29,7 +29,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
                                     @Param("end") LocalDateTime end,
                                     @Param("uris") List<String> uris);
 
-    @Query("select new ru.practicum.stats.projection.ViewStats(h.app, h.uri, count(distinct h.ip)) "
+    @Query("select new ru.practicum.stats.model.projection.ViewStats(h.app, h.uri, count(distinct h.ip)) "
             + "from EndpointHit h "
             + "where h.timestamp between :start and :end "
             + "group by h.app, h.uri "
@@ -37,7 +37,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
     List<ViewStats> findUniqueStats(@Param("start") LocalDateTime start,
                                     @Param("end") LocalDateTime end);
 
-    @Query("select new ru.practicum.stats.projection.ViewStats(h.app, h.uri, count(distinct h.ip)) "
+    @Query("select new ru.practicum.stats.model.projection.ViewStats(h.app, h.uri, count(distinct h.ip)) "
             + "from EndpointHit h "
             + "where h.timestamp between :start and :end "
             + "and h.uri in :uris "
