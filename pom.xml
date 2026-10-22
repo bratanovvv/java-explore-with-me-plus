@@ -7,17 +7,23 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.3.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 
 	<name>Explore With Me</name>
 
 	<groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
+	<modules>
+		<module>stats</module>
+		<module>main-service</module>
+	</modules>
+
 	<properties>
+		<revision>0.0.1-SNAPSHOT</revision>
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
