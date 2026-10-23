@@ -3,7 +3,25 @@ server:
 
 spring:
   application:
-    name: main-service
+    name: ewm-main-service
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6542/ewm-main
+    username: main
+    password: main
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+
+stats-server:
+  url: ${STATS_SERVER_URL:http://localhost:9090}
 
 management:
   endpoints:
