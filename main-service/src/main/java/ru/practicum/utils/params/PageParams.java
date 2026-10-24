@@ -4,6 +4,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.List;
+
 /**
  * Параметры пагинации списочных эндпоинтов.
  * <p>
@@ -26,14 +28,37 @@ public record PageParams(int from, int size) {
     }
 
     public Pageable toPageable() {
-        return PageRequest.of(pageNumber(), size);
+        return toPageable(Sort.unsorted());
     }
 
+    /**
+     * Страница загружается с запасом, чтобы компенсировать некратность {@code from} размеру страницы.
+     * Лишние элементы, загруженные из-за смещения внутри страницы, отбрасывает {@link #cut(List)}.
+     */
     public Pageable toPageable(Sort sort) {
-        return PageRequest.of(pageNumber(), size, sort);
+        return PageRequest.of(pageNumber(), size + offsetInPage(), sort);
+    }
+
+    /**
+     * Отбрасывает элементы, попавшие в выборку из-за некратности {@code from} размеру страницы,
+     * и оставляет ровно {@code size} элементов, начиная с {@code from}.
+     *
+     * @param content элементы загруженной страницы
+     * @param <T>     тип элементов
+     * @return запрошенное окно элементов
+     */
+    public <T> List<T> cut(List<T> content) {
+        return content.stream()
+                .skip(offsetInPage())
+                .limit(size)
+                .toList();
     }
 
     private int pageNumber() {
         return from / size;
+    }
+
+    private int offsetInPage() {
+        return from % size;
     }
 }
