@@ -31,7 +31,7 @@ public class UserService {
         Page<User> users = CollectionUtils.isEmpty(ids)
                 ? userRepository.findAll(pageable)
                 : userRepository.findAllByIdIn(ids, pageable);
-        return pageParams.cut(users.getContent());
+        return users.getContent();
     }
 
     @Transactional

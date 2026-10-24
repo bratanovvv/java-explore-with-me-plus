@@ -77,21 +77,20 @@ class UserServiceTest {
     }
 
     @Test
-    void getUsers_withNonMultipleFrom_shouldReturnRequestedWindow() {
-        List<User> loaded = IntStream.rangeClosed(10, 24)
+    void getUsers_withNonMultipleFrom_shouldUseExactOffset() {
+        List<User> loaded = IntStream.rangeClosed(15, 24)
                 .mapToObj(i -> new User((long) i, "User " + i, "user" + i + "@example.com"))
                 .toList();
         when(userRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(loaded));
 
         List<User> actual = userService.getUsers(null, new PageParams(15, 10));
 
-        assertThat(actual).hasSize(10);
-        assertThat(actual.get(0).getId()).isEqualTo(15L);
-        assertThat(actual.get(9).getId()).isEqualTo(24L);
+        assertThat(actual).containsExactlyElementsOf(loaded);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(userRepository).findAll(pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getOffset()).isEqualTo(15);
         assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(1);
-        assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(15);
+        assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(10);
     }
 
     @Test
