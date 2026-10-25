@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.practicum.utils.error.exception.ServiceException;
 
 import java.util.List;
@@ -66,6 +67,13 @@ public class ErrorHandler {
         String message = exception.getMostSpecificCause().getMessage();
         log.warn("409 Conflict: {}", exception.getMostSpecificCause().getMessage());
         return ApiError.of(HttpStatus.CONFLICT, ErrorReason.CONFLICT, ErrorReason.CONFLICT.getMessage());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNoResource(NoResourceFoundException exception) {
+        log.warn("404 Not Found: {}", exception.getMessage());
+        return ApiError.of(HttpStatus.NOT_FOUND, ErrorReason.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
