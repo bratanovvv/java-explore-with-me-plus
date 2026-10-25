@@ -28,11 +28,10 @@ public record PageParams(int from, int size) {
         return toPageable(Sort.unsorted());
     }
 
+    /**
+     * Возвращает {@link Pageable} с точным смещением {@code from}.
+     */
     public Pageable toPageable(Sort sort) {
         return new OffsetPageable(from, size, sort);
-    }
-
-    private int pageNumber() {
-        return from / size;
     }
 }

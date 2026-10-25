@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS events (
     description        VARCHAR(7000)    NOT NULL,
     event_date         TIMESTAMP        NOT NULL,
     created_on         TIMESTAMP        NOT NULL,
-    initiator_id       BIGINT           NOT NULL REFERENCES users (id)  ON DELETE CASCADE,
+    initiator_id       BIGINT           NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     lat                DOUBLE PRECISION NOT NULL,
     lon                DOUBLE PRECISION NOT NULL,
     paid               BOOLEAN          NOT NULL DEFAULT FALSE,
