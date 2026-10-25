@@ -6,7 +6,6 @@ import org.springframework.data.domain.Sort;
 /**
  * {@link Pageable} с точным смещением: {@code offset} — количество пропускаемых элементов, а не номер страницы.
  * <p>
-
  */
 public class OffsetPageable implements Pageable {
 
