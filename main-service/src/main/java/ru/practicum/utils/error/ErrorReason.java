@@ -13,6 +13,7 @@ public enum ErrorReason {
     BAD_REQUEST("Incorrectly made request."),
     NOT_FOUND("The required object was not found."),
     CONFLICT("For the requested operation the conditions are not met."),
+    INTEGRITY_CONSTRAINT("Integrity constraint has been violated."),
     INTERNAL_SERVER_ERROR("Unexpected error.");
 
     private final String message;
