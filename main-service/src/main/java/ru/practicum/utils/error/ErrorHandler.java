@@ -65,7 +65,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDataIntegrityViolation(DataIntegrityViolationException exception) {
         log.warn("409 Conflict: {}", exception.getMostSpecificCause().getMessage());
-        return ApiError.of(HttpStatus.CONFLICT, ErrorReason.CONFLICT, ErrorReason.CONFLICT.getMessage());
+        return ApiError.of(HttpStatus.CONFLICT, ErrorReason.INTEGRITY_CONSTRAINT, exception.getMostSpecificCause().getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
