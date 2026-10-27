@@ -64,7 +64,6 @@ public class ErrorHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDataIntegrityViolation(DataIntegrityViolationException exception) {
-        String message = exception.getMostSpecificCause().getMessage();
         log.warn("409 Conflict: {}", exception.getMostSpecificCause().getMessage());
         return ApiError.of(HttpStatus.CONFLICT, ErrorReason.CONFLICT, ErrorReason.CONFLICT.getMessage());
     }
