@@ -13,9 +13,8 @@ import lombok.NoArgsConstructor;
 /**
  * Пользователь.
  * <p>
- * Состав ответа задаётся {@link JsonView}: {@link ShortUser} — краткая
- * информация для вложенных объектов, {@link FullUser} — полные данные
- * административного API.
+ * Состав ответа задаётся {@link JsonView}:
+ * {@link ShortUser} — краткая информация для вложенных объектов, {@link FullUser} — полные данные.
  */
 @Data
 @Builder
@@ -23,15 +22,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserDto {
 
-    /**
-     * Краткое представление: идентификатор и имя.
-     */
     public interface ShortUser {
     }
 
-    /**
-     * Полное представление: краткая информация и email.
-     */
     public interface FullUser extends ShortUser {
     }
 

@@ -23,7 +23,6 @@ public class EventMapper {
         this.locationMapper = locationMapper;
     }
 
-    // views и confirmedRequests заполняет EventEnricher, а не маппер.
     public EventDto toDto(Event event) {
         return EventDto.builder()
                 .id(event.getId())

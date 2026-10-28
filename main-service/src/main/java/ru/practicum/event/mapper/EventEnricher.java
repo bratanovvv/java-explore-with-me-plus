@@ -10,9 +10,6 @@ import java.util.Comparator;
 
 /**
  * Обогащение DTO события просмотрами из сервиса статистики.
- * <p>
- * {@code views} читаются одним запросом на весь список.
- * <p>
  * TODO: обогащать {@code confirmedRequests} батчем {@code group by event_id} по статусу {@code CONFIRMED} (см. {@code ParticipationRequest}). Пока заявок нет — всегда 0, что корректно.
  */
 @Component

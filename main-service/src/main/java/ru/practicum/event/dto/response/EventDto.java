@@ -17,9 +17,8 @@ import java.time.LocalDateTime;
 /**
  * Информация о событии.
  * <p>
- * Один DTO на краткое и полное представление: состав ответа задаётся
- * {@link JsonView}. Поля краткого представления помечены {@link ShortEvent},
- * поля полного — {@link FullEvent}.
+ * Состав ответа задаётся {@link JsonView}.
+ * Поля краткого представления помечены {@link ShortEvent}, поля полного — {@link FullEvent}.
  * <p>
  */
 @Data
@@ -28,15 +27,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EventDto {
 
-    /**
-     * Краткое представление: элемент списка или подборки.
-     */
     public interface ShortEvent extends UserDto.ShortUser {
     }
 
-    /**
-     * Полное представление: карточка события, ответы модерации.
-     */
     public interface FullEvent extends ShortEvent {
     }
 
