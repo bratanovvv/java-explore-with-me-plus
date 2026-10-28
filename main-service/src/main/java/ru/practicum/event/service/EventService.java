@@ -14,6 +14,7 @@ import ru.practicum.event.dto.request.EventStateAction;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
+import ru.practicum.event.repository.EventSpecifications;
 import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
 import ru.practicum.utils.error.exception.NotFoundException;
@@ -104,27 +105,17 @@ public class EventService {
     }
 
     public List<Event> getPublicEvents(PublicEventFilter filter, PageParams pageParams) {
-        // TODO: пробросить filter.onlyAvailable() в репозиторий (см. findPublicEvents).
         eventValidator.validateDateRange(filter.rangeStart(), filter.rangeEnd());
-        LocalDateTime start = filter.rangeStart();
-        if (start == null && filter.rangeEnd() == null) {
-            start = LocalDateTime.now();
-        }
-
         Pageable pageable = filter.sort() == EventSort.VIEWS
                 ? Pageable.unpaged()
                 : pageParams.toPageable(PUBLIC_DATE_SORT);
-        return eventRepository.findPublicEvents(
-                EventState.PUBLISHED, normalizeText(filter.text()), filter.categories(), filter.paid(),
-                start, filter.rangeEnd(), pageable);
+        return eventRepository.findAll(EventSpecifications.publicEvents(filter), pageable).getContent();
     }
 
     public List<Event> getAdminEvents(AdminEventFilter filter, PageParams pageParams) {
         eventValidator.validateDateRange(filter.rangeStart(), filter.rangeEnd());
-        return eventRepository.findAdminEvents(
-                filter.users(), filter.states(), filter.categories(),
-                filter.rangeStart(), filter.rangeEnd(),
-                pageParams.toPageable(ADMIN_SORT));
+        return eventRepository.findAll(EventSpecifications.adminEvents(filter),
+                pageParams.toPageable(ADMIN_SORT)).getContent();
     }
 
     public Event getPublicEvent(Long eventId) {
@@ -176,9 +167,5 @@ public class EventService {
         if (updates.getTitle() != null) {
             event.setTitle(updates.getTitle());
         }
-    }
-
-    private static String normalizeText(String text) {
-        return text == null || text.isBlank() ? null : text.trim();
     }
 }

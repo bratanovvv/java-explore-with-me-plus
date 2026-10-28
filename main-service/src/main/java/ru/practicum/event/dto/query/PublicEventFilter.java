@@ -14,4 +14,10 @@ public record PublicEventFilter(
         LocalDateTime rangeEnd,
         boolean onlyAvailable,
         EventSort sort) {
+
+    public PublicEventFilter {
+        if (rangeStart == null && rangeEnd == null) {
+            rangeStart = LocalDateTime.now();
+        }
+    }
 }

@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.event.dto.query.AdminEventFilter;
@@ -183,9 +184,8 @@ class EventServiceTest {
     @Test
     void getAdminEvents_shouldUseOffsetPagination() {
         Event event = Event.builder().id(1L).build();
-        when(eventRepository.findAdminEvents(
-                any(), any(), any(), any(), any(), any(Pageable.class)))
-                .thenReturn(List.of(event));
+        when(eventRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(event)));
 
         List<Event> events = eventService.getAdminEvents(
                 new AdminEventFilter(
@@ -194,8 +194,7 @@ class EventServiceTest {
 
         assertThat(events).containsExactly(event);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findAdminEvents(
-                any(), any(), any(), any(), any(), pageableCaptor.capture());
+        verify(eventRepository).findAll(any(Specification.class), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getOffset()).isEqualTo(5);
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(20);
         verify(eventValidator).validateDateRange(null, null);
@@ -204,9 +203,8 @@ class EventServiceTest {
     @Test
     void getPublicEvents_shouldUseDatabasePaginationForEventDateSort() {
         Event event = Event.builder().id(1L).build();
-        when(eventRepository.findPublicEvents(
-                any(), any(), any(), any(), any(), any(), any(Pageable.class)))
-                .thenReturn(List.of(event));
+        when(eventRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(event)));
 
         List<Event> events = eventService.getPublicEvents(
                 new PublicEventFilter("text", List.of(2L), true, null, null, false, EventSort.EVENT_DATE),
@@ -214,17 +212,15 @@ class EventServiceTest {
 
         assertThat(events).containsExactly(event);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findPublicEvents(
-                any(), any(), any(), any(), any(), any(), pageableCaptor.capture());
+        verify(eventRepository).findAll(any(Specification.class), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getSort())
                 .isEqualTo(Sort.by(Sort.Direction.ASC, "eventDate").and(Sort.by(Sort.Direction.ASC, "id")));
     }
 
     @Test
     void getPublicEvents_shouldDefaultToEventDateSort() {
-        when(eventRepository.findPublicEvents(
-                any(), any(), any(), any(), any(), any(), any(Pageable.class)))
-                .thenReturn(List.of());
+        when(eventRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of()));
 
         List<Event> events = eventService.getPublicEvents(
                 new PublicEventFilter(null, null, null, null, null, false, null),
@@ -232,8 +228,7 @@ class EventServiceTest {
 
         assertThat(events).isEmpty();
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findPublicEvents(
-                any(), any(), any(), any(), any(), any(), pageableCaptor.capture());
+        verify(eventRepository).findAll(any(Specification.class), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().isPaged()).isTrue();
     }
 
@@ -241,9 +236,8 @@ class EventServiceTest {
     void getPublicEvents_shouldReturnAllMatchesForViewsSort() {
         Event first = Event.builder().id(1L).build();
         Event second = Event.builder().id(2L).build();
-        when(eventRepository.findPublicEvents(
-                any(), any(), any(), any(), any(), any(), any(Pageable.class)))
-                .thenReturn(List.of(first, second));
+        when(eventRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(first, second)));
 
         List<Event> events = eventService.getPublicEvents(
                 new PublicEventFilter(null, null, null, null, null, false, EventSort.VIEWS),
@@ -251,8 +245,7 @@ class EventServiceTest {
 
         assertThat(events).containsExactly(first, second);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findPublicEvents(
-                any(), any(), any(), any(), any(), any(), pageableCaptor.capture());
+        verify(eventRepository).findAll(any(Specification.class), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().isUnpaged()).isTrue();
     }
 
