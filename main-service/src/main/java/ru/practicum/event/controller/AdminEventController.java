@@ -5,9 +5,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,12 +20,9 @@ import ru.practicum.event.dto.response.EventDto;
 import ru.practicum.event.mapper.EventEnricher;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.model.EventState;
 import ru.practicum.event.service.EventService;
-import ru.practicum.utils.formats.DateFormats;
 import ru.practicum.utils.params.PageParams;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -49,16 +46,9 @@ public class AdminEventController {
     @GetMapping
     @JsonView(EventDto.FullEvent.class)
     public List<EventDto> getEvents(
-            @RequestParam(required = false) List<Long> users,
-            @RequestParam(required = false) List<EventState> states,
-            @RequestParam(required = false) List<Long> categories,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = DateFormats.DATE_TIME) LocalDateTime rangeStart,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = DateFormats.DATE_TIME) LocalDateTime rangeEnd,
+            @ModelAttribute AdminEventFilter filter,
             @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
             @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size) {
-        AdminEventFilter filter = new AdminEventFilter(users, states, categories, rangeStart, rangeEnd);
         return eventEnricher.toDtos(eventService.getAdminEvents(filter, new PageParams(from, size)));
     }
 
