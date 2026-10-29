@@ -16,6 +16,10 @@ spring:
       ddl-auto: none
     open-in-view: false
 
+  jackson:
+    mapper:
+      default-view-inclusion: true
+
   sql:
     init:
       mode: always

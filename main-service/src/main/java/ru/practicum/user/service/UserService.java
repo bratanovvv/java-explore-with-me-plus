@@ -26,6 +26,11 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    public User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+    }
+
     public List<User> getUsers(List<Long> ids, PageParams pageParams) {
         Pageable pageable = pageParams.toPageable(Sort.by(Sort.Direction.ASC, "id"));
         Page<User> users = CollectionUtils.isEmpty(ids)
@@ -46,8 +51,7 @@ public class UserService {
 
     @Transactional
     public void delete(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+        User user = getUser(userId);
         userRepository.delete(user);
         log.debug("Удалён пользователь id={}", userId);
     }

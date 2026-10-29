@@ -1,5 +1,6 @@
 package ru.practicum.user.mapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.model.User;
@@ -11,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserMapperTest {
 
     private final UserMapper userMapper = new UserMapper();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void toDto_shouldMapAllFields() {
@@ -44,5 +47,29 @@ class UserMapperTest {
 
         assertThat(userDtos).hasSize(2);
         assertThat(userDtos).extracting(UserDto::getId).containsExactly(1L, 2L);
+    }
+
+    @Test
+    void shortUserView_shouldReturnOnlyIdAndName() throws Exception {
+        UserDto userDto = new UserDto(1L, "Иван Петров", "ivan@example.com");
+
+        String json = objectMapper.writerWithView(UserDto.ShortUser.class).writeValueAsString(userDto);
+
+        assertThat(json)
+                .contains("\"id\":1")
+                .contains("\"name\":\"Иван Петров\"")
+                .doesNotContain("email");
+    }
+
+    @Test
+    void fullUserView_shouldReturnEmail() throws Exception {
+        UserDto userDto = new UserDto(1L, "Иван Петров", "ivan@example.com");
+
+        String json = objectMapper.writerWithView(UserDto.FullUser.class).writeValueAsString(userDto);
+
+        assertThat(json)
+                .contains("\"id\":1")
+                .contains("\"name\":\"Иван Петров\"")
+                .contains("\"email\":\"ivan@example.com\"");
     }
 }

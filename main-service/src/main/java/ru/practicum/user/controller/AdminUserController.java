@@ -1,5 +1,6 @@
 package ru.practicum.user.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -38,6 +39,7 @@ public class AdminUserController {
     }
 
     @GetMapping
+    @JsonView(UserDto.FullUser.class)
     public List<UserDto> getUsers(
             @RequestParam(required = false) List<Long> ids,
             @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
@@ -48,6 +50,7 @@ public class AdminUserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @JsonView(UserDto.FullUser.class)
     public UserDto create(@Valid @RequestBody UserDto userDto) {
         User user = userService.create(userMapper.toEntity(userDto));
         return userMapper.toDto(user);
