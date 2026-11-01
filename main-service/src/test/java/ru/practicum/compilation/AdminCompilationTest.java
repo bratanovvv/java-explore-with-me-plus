@@ -12,7 +12,9 @@ import ru.practicum.compilation.dto.RequestCompilationDto;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -95,9 +97,9 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     @Test
     public void updateCompilationTitle_ShouldReturnOkAndNewCompilation() throws Exception {
         var idCom = getIdFromObject(createCompilation(setEvents, false, "Title"));
-        String json = """
-                {"title" : "UpdateTitle"}
-                """;
+        String json = "{\n" +
+                "  \"title\": \"UpdateTitle\"\n" +
+                "}";
         mockMvc.perform(patch(URL + "/" + idCom).contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("UpdateTitle"));
@@ -106,9 +108,9 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     @Test
     public void updateCompilationEvent_ShouldReturnOkAndNewCompilation() throws Exception {
         var idCom = getIdFromObject(createCompilation(setEvents, false, "Title"));
-        String json = """
-                {"events" : []}
-                """;
+        String json = "{\n" +
+                "  \"events\": []\n" +
+                "}";
         mockMvc.perform(patch(URL + "/" + idCom).contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.events.length()").value(0));
@@ -117,9 +119,9 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     @Test
     public void updateCompilationPinned_ShouldReturnOkAndNewCompilation() throws Exception {
         var idCom = getIdFromObject(createCompilation(setEvents, false, "Title"));
-        String json = """
-                {"pinned" : true}
-                """;
+        String json = "{\n" +
+                "  \"pinned\": true\n" +
+                "}";
         mockMvc.perform(patch(URL + "/" + idCom).contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pinned").value("true"));
@@ -128,9 +130,9 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     @Test
     public void updateCompilationNotExisting_ShouldReturnNotFound() throws Exception {
         var idCom = getIdFromObject(createCompilation(setEvents, false, "Title")) + 1;
-        String json = """
-                {"title" : "UpdateTitle"}
-                """;
+        String json = "{\n" +
+                "  \"title\": \"UpdateTitle\"\n" +
+                "}";
         mockMvc.perform(patch(URL + "/" + idCom).contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isNotFound());
     }
