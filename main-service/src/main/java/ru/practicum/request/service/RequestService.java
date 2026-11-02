@@ -15,6 +15,8 @@ import ru.practicum.utils.error.exception.ConflictException;
 import ru.practicum.utils.error.exception.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -40,6 +42,22 @@ public class RequestService {
         return requestRepository.findAllByRequesterId(userId);
     }
 
+    public List<Request> getEventRequests(Long eventId) {
+        return requestRepository.findAllByEventId(eventId);
+    }
+
+    public List<Request> getRequestsByIds(Collection<Long> requestIds) {
+        return requestRepository.findAllByIdIn(requestIds);
+    }
+
+    public List<Request> getEventRequestsByStatus(Collection<Long> eventIds, RequestStatus status) {
+        return requestRepository.findAllByEventIdInAndStatus(eventIds, status);
+    }
+
+    public long countConfirmedRequests(Long eventId) {
+        return requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+    }
+
     @Transactional
     public Request createRequest(Long userId, Long eventId) {
         log.debug("Создание заявки пользователем userId={} на событие eventId={}", userId, eventId);
@@ -56,7 +74,7 @@ public class RequestService {
         Request request = Request.builder()
                 .event(event)
                 .requester(requester)
-                .created(LocalDateTime.now())
+                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .status(status)
                 .build();
 

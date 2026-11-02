@@ -9,6 +9,9 @@ import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.dto.response.EventDto;
 import ru.practicum.event.model.Event;
+import ru.practicum.request.model.Request;
+import ru.practicum.request.model.RequestStatus;
+import ru.practicum.request.service.RequestService;
 import ru.practicum.stats.dto.ViewStatsDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
@@ -33,12 +36,17 @@ class EventEnricherTest {
     @Mock
     private StatsService statsService;
 
+    @Mock
+    private RequestService requestService;
+
     private EventEnricher eventEnricher;
 
     @BeforeEach
     void setUp() {
         eventEnricher = new EventEnricher(
-                new EventMapper(new CategoryMapper(), new UserMapper(), new LocationMapper()), statsService);
+                new EventMapper(new CategoryMapper(), new UserMapper(), new LocationMapper()),
+                statsService,
+                requestService);
     }
 
     @Test
@@ -46,6 +54,7 @@ class EventEnricherTest {
         Event event = buildEvent(1L);
         when(statsService.getViews(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(List.of(new ViewStatsDto("ewm-main-service", "/events/1", 5L)));
+        stubNoConfirmedRequests();
 
         EventDto dto = eventEnricher.toDto(event);
 
@@ -62,6 +71,7 @@ class EventEnricherTest {
                 .thenReturn(List.of(
                         new ViewStatsDto("ewm-main-service", "/events/1", 5L),
                         new ViewStatsDto("ewm-main-service", "/events/2", 2L)));
+        stubNoConfirmedRequests();
 
         List<EventDto> dtos = eventEnricher.toDtos(List.of(buildEvent(1L), buildEvent(2L)));
 
@@ -75,6 +85,7 @@ class EventEnricherTest {
     void toDtos_shouldReturnZeroViewsWhenStatsAreMissing() {
         when(statsService.getViews(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyBoolean()))
                 .thenReturn(List.of());
+        stubNoConfirmedRequests();
 
         List<EventDto> dtos = eventEnricher.toDtos(List.of(buildEvent(3L)));
 
@@ -85,7 +96,7 @@ class EventEnricherTest {
     @Test
     void toDtos_shouldNotCallStatsForEmptyList() {
         assertThat(eventEnricher.toDtos(List.of())).isEmpty();
-        verifyNoInteractions(statsService);
+        verifyNoInteractions(statsService, requestService);
     }
 
     @Test
@@ -95,6 +106,7 @@ class EventEnricherTest {
                         new ViewStatsDto("ewm-main-service", "/events/1", 1L),
                         new ViewStatsDto("ewm-main-service", "/events/2", 5L),
                         new ViewStatsDto("ewm-main-service", "/events/3", 3L)));
+        stubNoConfirmedRequests();
 
         List<EventDto> dtos = eventEnricher.toDtosByViews(
                 List.of(buildEvent(1L), buildEvent(2L), buildEvent(3L)), new PageParams(1, 1));
@@ -107,6 +119,31 @@ class EventEnricherTest {
         List<EventDto> dtos = eventEnricher.toDtosByViews(List.of(), new PageParams(10, 10));
 
         assertThat(dtos).isEmpty();
+    }
+
+    @Test
+    void toDtos_shouldCountConfirmedRequestsInSingleBatch() {
+        when(statsService.getViews(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyBoolean()))
+                .thenReturn(List.of());
+        when(requestService.getEventRequestsByStatus(anyList(), eq(RequestStatus.CONFIRMED)))
+                .thenReturn(List.of(buildConfirmedRequest(1L), buildConfirmedRequest(1L)));
+
+        List<EventDto> dtos = eventEnricher.toDtos(List.of(buildEvent(1L), buildEvent(2L), buildEvent(3L)));
+
+        assertThat(dtos).extracting(EventDto::getConfirmedRequests).containsExactly(2L, 0L, 0L);
+        verify(requestService).getEventRequestsByStatus(List.of(1L, 2L, 3L), RequestStatus.CONFIRMED);
+    }
+
+    private void stubNoConfirmedRequests() {
+        when(requestService.getEventRequestsByStatus(anyList(), eq(RequestStatus.CONFIRMED)))
+                .thenReturn(List.of());
+    }
+
+    private Request buildConfirmedRequest(Long eventId) {
+        return Request.builder()
+                .event(Event.builder().id(eventId).build())
+                .status(RequestStatus.CONFIRMED)
+                .build();
     }
 
     private Event buildEvent(Long id) {

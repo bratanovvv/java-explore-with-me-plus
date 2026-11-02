@@ -237,4 +237,35 @@ class RequestServiceTest {
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Only pending requests can be canceled");
     }
+
+    @Test
+    void getEventRequests_shouldReturnEventRequests() {
+        Request request = new Request();
+        when(requestRepository.findAllByEventId(10L)).thenReturn(List.of(request));
+
+        assertThat(requestService.getEventRequests(10L)).containsExactly(request);
+    }
+
+    @Test
+    void getRequestsByIds_shouldReturnRequestsByIds() {
+        Request request = new Request();
+        when(requestRepository.findAllByIdIn(List.of(1L, 2L))).thenReturn(List.of(request));
+
+        assertThat(requestService.getRequestsByIds(List.of(1L, 2L))).containsExactly(request);
+    }
+
+    @Test
+    void getEventRequestsByStatus_shouldReturnRequestsWithStatus() {
+        Request request = new Request();
+        when(requestRepository.findAllByEventIdInAndStatus(List.of(10L), RequestStatus.PENDING)).thenReturn(List.of(request));
+
+        assertThat(requestService.getEventRequestsByStatus(List.of(10L), RequestStatus.PENDING)).containsExactly(request);
+    }
+
+    @Test
+    void countConfirmedRequests_shouldCountConfirmedRequests() {
+        when(requestRepository.countByEventIdAndStatus(10L, RequestStatus.CONFIRMED)).thenReturn(3L);
+
+        assertThat(requestService.countConfirmedRequests(10L)).isEqualTo(3L);
+    }
 }
