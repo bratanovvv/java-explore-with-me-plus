@@ -7,12 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
-import ru.practicum.event.repository.EventRepository;
+import ru.practicum.event.service.EventService;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
-import ru.practicum.user.repository.UserRepository;
+import ru.practicum.user.service.UserService;
 import ru.practicum.utils.error.exception.ConflictException;
 import ru.practicum.utils.error.exception.NotFoundException;
 
@@ -30,10 +30,9 @@ class RequestServiceTest {
     @Mock
     private RequestRepository requestRepository;
     @Mock
-    private EventRepository eventRepository;
+    private EventService eventService;
     @Mock
-    private UserRepository userRepository;
-
+    private UserService userService;
     @InjectMocks
     private RequestService requestService;
 
@@ -41,7 +40,7 @@ class RequestServiceTest {
     void getUserRequests_whenUserExists_shouldReturnList() {
         Long userId = 1L;
         Request request = new Request();
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userService.getUser(userId)).thenReturn(new User());
         when(requestRepository.findAllByRequesterId(userId)).thenReturn(List.of(request));
 
         List<Request> result = requestService.getUserRequests(userId);
@@ -51,7 +50,8 @@ class RequestServiceTest {
 
     @Test
     void getUserRequests_whenUserNotFound_shouldThrowNotFoundException() {
-        when(userRepository.existsById(99L)).thenReturn(false);
+        when(userService.getUser(99L))
+                .thenThrow(new NotFoundException("User with id=99 was not found"));
 
         assertThatThrownBy(() -> requestService.getUserRequests(99L))
                 .isInstanceOf(NotFoundException.class)
@@ -72,8 +72,8 @@ class RequestServiceTest {
         event.setRequestModeration(true);
         event.setParticipantLimit(10);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(requester));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(userService.getUser(userId)).thenReturn(requester);
+        when(eventService.getEventWithLock(eventId)).thenReturn(event);
         when(requestRepository.existsByEventIdAndRequesterId(eventId, userId)).thenReturn(false);
         when(requestRepository.save(any(Request.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -98,8 +98,8 @@ class RequestServiceTest {
         event.setRequestModeration(false);
         event.setParticipantLimit(15);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(requester));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(userService.getUser(userId)).thenReturn(requester);
+        when(eventService.getEventWithLock(eventId)).thenReturn(event);
         when(requestRepository.existsByEventIdAndRequesterId(eventId, userId)).thenReturn(false);
         when(requestRepository.save(any(Request.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -110,7 +110,8 @@ class RequestServiceTest {
 
     @Test
     void createRequest_whenUserNotFound_shouldThrowNotFoundException() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+        when(userService.getUser(99L))
+                .thenThrow(new NotFoundException("User with id=99 was not found"));
 
         assertThatThrownBy(() -> requestService.createRequest(99L, 1L))
                 .isInstanceOf(NotFoundException.class)
@@ -121,10 +122,10 @@ class RequestServiceTest {
     void createRequest_whenInitiatorRequestsOwnEvent_shouldThrowConflictException() {
         Long userId = 1L;
         User user = new User(); user.setId(userId);
-        Event event = new Event(); event.setId(10L); event.setInitiator(user); // Сам себе инициатор
+        Event event = new Event(); event.setId(10L); event.setInitiator(user);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
+        when(userService.getUser(userId)).thenReturn(user);
+        when(eventService.getEventWithLock(10L)).thenReturn(event);
 
         assertThatThrownBy(() -> requestService.createRequest(userId, 10L))
                 .isInstanceOf(ConflictException.class)
@@ -138,8 +139,8 @@ class RequestServiceTest {
         User initiator = new User(); initiator.setId(2L);
         Event event = new Event(); event.setId(10L); event.setInitiator(initiator); event.setState(EventState.PENDING);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
+        when(userService.getUser(userId)).thenReturn(user);
+        when(eventService.getEventWithLock(10L)).thenReturn(event);
 
         assertThatThrownBy(() -> requestService.createRequest(userId, 10L))
                 .isInstanceOf(ConflictException.class)
@@ -153,9 +154,9 @@ class RequestServiceTest {
         User initiator = new User(); initiator.setId(2L);
         Event event = new Event(); event.setId(10L); event.setInitiator(initiator); event.setState(EventState.PUBLISHED);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
-        when(requestRepository.existsByEventIdAndRequesterId(10L, userId)).thenReturn(true); // Дубликат есть
+        when(userService.getUser(userId)).thenReturn(user);
+        when(eventService.getEventWithLock(10L)).thenReturn(event);
+        when(requestRepository.existsByEventIdAndRequesterId(10L, userId)).thenReturn(true);
 
         assertThatThrownBy(() -> requestService.createRequest(userId, 10L))
                 .isInstanceOf(ConflictException.class)
@@ -174,10 +175,10 @@ class RequestServiceTest {
         event.setState(EventState.PUBLISHED);
         event.setParticipantLimit(5); // Лимит 5 человек
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
+        when(userService.getUser(userId)).thenReturn(user);
+        when(eventService.getEventWithLock(10L)).thenReturn(event);
         when(requestRepository.existsByEventIdAndRequesterId(10L, userId)).thenReturn(false);
-        when(requestRepository.countByEventIdAndStatus(10L, RequestStatus.CONFIRMED)).thenReturn(5L); // Уже 5
+        when(requestRepository.countByEventIdAndStatus(10L, RequestStatus.CONFIRMED)).thenReturn(5L);
 
         assertThatThrownBy(() -> requestService.createRequest(userId, 10L))
                 .isInstanceOf(ConflictException.class)
@@ -213,7 +214,7 @@ class RequestServiceTest {
     void cancelRequest_whenNotOwner_shouldThrowNotFoundException() {
         Request request = new Request();
         request.setId(5L);
-        request.setRequester(new User()); request.getRequester().setId(2L); // Чужая заявка
+        request.setRequester(new User()); request.getRequester().setId(2L);
 
         when(requestRepository.findById(5L)).thenReturn(Optional.of(request));
 
@@ -224,12 +225,11 @@ class RequestServiceTest {
 
     @Test
     void cancelRequest_whenStatusIsNotPending_shouldThrowConflictException() {
-        // ВНИМАНИЕ: Этот тест упадет, пока ты не вернешь проверку статуса в сервис!
         Long userId = 1L;
         Request request = new Request();
         request.setId(5L);
         request.setRequester(new User()); request.getRequester().setId(userId);
-        request.setStatus(RequestStatus.CONFIRMED); // Уже подтверждена
+        request.setStatus(RequestStatus.CONFIRMED);
 
         when(requestRepository.findById(5L)).thenReturn(Optional.of(request));
 

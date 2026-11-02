@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
-import ru.practicum.event.repository.EventRepository;
+import ru.practicum.event.service.EventService;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
-import ru.practicum.user.repository.UserRepository;
+import ru.practicum.user.service.UserService;
 import ru.practicum.utils.error.exception.ConflictException;
 import ru.practicum.utils.error.exception.NotFoundException;
 
@@ -23,34 +23,28 @@ import java.util.List;
 public class RequestService {
 
     private final RequestRepository requestRepository;
-    private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final EventService eventService;
+    private final UserService userService;
 
     public RequestService(RequestRepository requestRepository,
-                          EventRepository eventRepository,
-                          UserRepository userRepository) {
+                          EventService eventService,
+                          UserService userService) {
         this.requestRepository = requestRepository;
-        this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
+        this.eventService = eventService;
+        this.userService = userService;
     }
 
     public List<Request> getUserRequests(Long userId) {
-        log.info("Получение всех заявок пользователя userId={}", userId);
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with id=" + userId + " was not found");
-        }
-
+        log.debug("Получение всех заявок пользователя userId={}", userId);
+        userService.getUser(userId);
         return requestRepository.findAllByRequesterId(userId);
     }
 
     @Transactional
     public Request createRequest(Long userId, Long eventId) {
-        log.info("Создание заявки пользователем userId={} на событие eventId={}", userId, eventId);
-        User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
-
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        log.debug("Создание заявки пользователем userId={} на событие eventId={}", userId, eventId);
+        User requester = userService.getUser(userId);
+        Event event = eventService.getEventWithLock(eventId);
 
         validateCreateRequest(userId, event);
 
@@ -71,7 +65,7 @@ public class RequestService {
 
     @Transactional
     public Request cancelRequest(Long userId, Long requestId) {
-        log.info("Отмена заявки requestId={} пользователем userId={}", requestId, userId);
+        log.debug("Отмена заявки requestId={} пользователем userId={}", requestId, userId);
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
