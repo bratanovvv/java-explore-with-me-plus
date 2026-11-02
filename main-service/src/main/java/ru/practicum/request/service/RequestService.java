@@ -59,6 +59,19 @@ public class RequestService {
     }
 
     @Transactional
+    public void updateStatuses(Collection<Long> requestIds, RequestStatus status, Long eventId) {
+        if (requestIds.isEmpty()) {
+            return;
+        }
+        requestRepository.updateStatusByIdsInEvent(requestIds, status, eventId);
+    }
+
+    @Transactional
+    public void rejectPending(Long eventId) {
+        requestRepository.updateStatusByEventAndStatus(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
+    }
+
+    @Transactional
     public Request createRequest(Long userId, Long eventId) {
         log.debug("Создание заявки пользователем userId={} на событие eventId={}", userId, eventId);
         User requester = userService.getUser(userId);

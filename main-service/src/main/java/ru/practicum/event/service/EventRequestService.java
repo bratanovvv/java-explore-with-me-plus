@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
+import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.dto.RequestStatusUpdate;
 import ru.practicum.request.dto.RequestStatusUpdateResult;
 import ru.practicum.request.mapper.RequestMapper;
@@ -11,7 +12,6 @@ import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
 import ru.practicum.request.service.RequestService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,43 +59,50 @@ public class EventRequestService {
 
         return update.getStatus() == RequestStatus.CONFIRMED
                 ? confirmRequests(event, requests)
-                : rejectRequests(requests);
+                : rejectRequests(event, requests);
     }
 
     private RequestStatusUpdateResult confirmRequests(Event event, List<Request> requests) {
+        Long eventId = event.getId();
         int limit = event.getParticipantLimit();
-        long confirmedCount = requestService.countConfirmedRequests(event.getId());
+        long confirmedCount = requestService.countConfirmedRequests(eventId);
         eventValidator.validateParticipantLimit(limit, confirmedCount);
 
-        List<Request> confirmed = new ArrayList<>();
-        List<Request> rejected = new ArrayList<>();
-        for (Request request : requests) {
-            if (confirmedCount + confirmed.size() < limit) {
-                request.setStatus(RequestStatus.CONFIRMED);
-                confirmed.add(request);
-            } else {
-                request.setStatus(RequestStatus.REJECTED);
-                rejected.add(request);
-            }
-        }
+        List<Long> requestIds = requestIds(requests);
+        int confirmedSlots = (int) Math.min(requestIds.size(), limit - confirmedCount);
+        List<Long> confirmedIds = requestIds.subList(0, confirmedSlots);
+        List<Long> rejectedIds = requestIds.subList(confirmedSlots, requestIds.size());
 
-        if (confirmedCount + confirmed.size() == limit) {
-            List<Request> pending = requestService.getEventRequestsByStatus(
-                    List.of(event.getId()), RequestStatus.PENDING);
-            pending.forEach(request -> request.setStatus(RequestStatus.REJECTED));
-            rejected.addAll(pending);
+        requestService.updateStatuses(confirmedIds, RequestStatus.CONFIRMED, eventId);
+        requestService.updateStatuses(rejectedIds, RequestStatus.REJECTED, eventId);
+        if (confirmedCount + confirmedSlots == limit) {
+            requestService.rejectPending(eventId);
         }
-        return buildResult(confirmed, rejected);
+        return buildResult(requestIds);
     }
 
-    private RequestStatusUpdateResult rejectRequests(List<Request> requests) {
-        requests.forEach(request -> request.setStatus(RequestStatus.REJECTED));
-        return buildResult(List.of(), requests);
+    private RequestStatusUpdateResult rejectRequests(Event event, List<Request> requests) {
+        List<Long> requestIds = requestIds(requests);
+        requestService.updateStatuses(requestIds, RequestStatus.REJECTED, event.getId());
+        return buildResult(requestIds);
     }
 
-    private RequestStatusUpdateResult buildResult(List<Request> confirmed, List<Request> rejected) {
-        return new RequestStatusUpdateResult(
-                requestMapper.toDtoList(confirmed),
-                requestMapper.toDtoList(rejected));
+    private List<Long> requestIds(List<Request> requests) {
+        return requests.stream()
+                .map(Request::getId)
+                .toList();
+    }
+
+    private RequestStatusUpdateResult buildResult(List<Long> requestIds) {
+        List<Request> updated = requestService.getRequestsByIds(requestIds);
+        List<RequestDto> confirmed = updated.stream()
+                .filter(request -> request.getStatus() == RequestStatus.CONFIRMED)
+                .map(requestMapper::toDto)
+                .toList();
+        List<RequestDto> rejected = updated.stream()
+                .filter(request -> request.getStatus() == RequestStatus.REJECTED)
+                .map(requestMapper::toDto)
+                .toList();
+        return new RequestStatusUpdateResult(confirmed, rejected);
     }
 }

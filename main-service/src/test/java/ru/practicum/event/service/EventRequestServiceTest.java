@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -153,10 +154,11 @@ class EventRequestServiceTest {
     @Test
     void changeRequestStatus_whenRejecting_shouldRejectPendingRequests() {
         RequestStatusUpdate update = buildUpdate(RequestStatus.REJECTED, 1L, 2L);
-        Request first = buildRequest(1L, RequestStatus.PENDING);
-        Request second = buildRequest(2L, RequestStatus.PENDING);
         when(eventService.getEventWithLock(EVENT_ID)).thenReturn(buildEvent(10, true));
-        when(requestService.getRequestsByIds(List.of(1L, 2L))).thenReturn(List.of(first, second));
+        when(requestService.getRequestsByIds(List.of(1L, 2L)))
+                .thenReturn(
+                        List.of(buildRequest(1L, RequestStatus.PENDING), buildRequest(2L, RequestStatus.PENDING)),
+                        List.of(buildRequest(1L, RequestStatus.REJECTED), buildRequest(2L, RequestStatus.REJECTED)));
 
         RequestStatusUpdateResult result = eventRequestService.changeRequestStatus(OWNER_ID, EVENT_ID, update);
 
@@ -164,22 +166,25 @@ class EventRequestServiceTest {
         assertThat(result.rejectedRequests()).extracting(RequestDto::getId).containsExactly(1L, 2L);
         assertThat(result.rejectedRequests()).extracting(RequestDto::getStatus)
                 .containsOnly(RequestStatus.REJECTED);
-        verify(requestService).getRequestsByIds(List.of(1L, 2L));
+        verify(requestService).updateStatuses(List.of(1L, 2L), RequestStatus.REJECTED, EVENT_ID);
     }
 
     @Test
     void changeRequestStatus_whenConfirming_shouldConfirmPendingRequest() {
         RequestStatusUpdate update = buildUpdate(RequestStatus.CONFIRMED, 1L);
-        Request request = buildRequest(1L, RequestStatus.PENDING);
         when(eventService.getEventWithLock(EVENT_ID)).thenReturn(buildEvent(10, true));
-        when(requestService.getRequestsByIds(List.of(1L))).thenReturn(List.of(request));
         when(requestService.countConfirmedRequests(EVENT_ID)).thenReturn(0L);
+        when(requestService.getRequestsByIds(List.of(1L)))
+                .thenReturn(
+                        List.of(buildRequest(1L, RequestStatus.PENDING)),
+                        List.of(buildRequest(1L, RequestStatus.CONFIRMED)));
 
         RequestStatusUpdateResult result = eventRequestService.changeRequestStatus(OWNER_ID, EVENT_ID, update);
 
         assertThat(result.confirmedRequests()).extracting(RequestDto::getId).containsExactly(1L);
         assertThat(result.rejectedRequests()).isEmpty();
-        assertThat(request.getStatus()).isEqualTo(RequestStatus.CONFIRMED);
+        verify(requestService).updateStatuses(List.of(1L), RequestStatus.CONFIRMED, EVENT_ID);
+        verify(requestService, never()).rejectPending(EVENT_ID);
     }
 
     @Test
@@ -198,21 +203,20 @@ class EventRequestServiceTest {
     @Test
     void changeRequestStatus_whenLimitExhaustedAfterConfirmation_shouldRejectRemainingPending() {
         RequestStatusUpdate update = buildUpdate(RequestStatus.CONFIRMED, 1L, 2L);
-        Request first = buildRequest(1L, RequestStatus.PENDING);
-        Request second = buildRequest(2L, RequestStatus.PENDING);
-        Request remaining = buildRequest(3L, RequestStatus.PENDING);
         when(eventService.getEventWithLock(EVENT_ID)).thenReturn(buildEvent(2, true));
-        when(requestService.getRequestsByIds(List.of(1L, 2L))).thenReturn(List.of(first, second));
         when(requestService.countConfirmedRequests(EVENT_ID)).thenReturn(1L);
-        when(requestService.getEventRequestsByStatus(List.of(EVENT_ID), RequestStatus.PENDING))
-                .thenReturn(List.of(remaining));
+        when(requestService.getRequestsByIds(List.of(1L, 2L)))
+                .thenReturn(
+                        List.of(buildRequest(1L, RequestStatus.PENDING), buildRequest(2L, RequestStatus.PENDING)),
+                        List.of(buildRequest(1L, RequestStatus.CONFIRMED), buildRequest(2L, RequestStatus.REJECTED)));
 
         RequestStatusUpdateResult result = eventRequestService.changeRequestStatus(OWNER_ID, EVENT_ID, update);
 
         assertThat(result.confirmedRequests()).extracting(RequestDto::getId).containsExactly(1L);
-        assertThat(result.rejectedRequests()).extracting(RequestDto::getId).containsExactly(2L, 3L);
-        assertThat(second.getStatus()).isEqualTo(RequestStatus.REJECTED);
-        assertThat(remaining.getStatus()).isEqualTo(RequestStatus.REJECTED);
+        assertThat(result.rejectedRequests()).extracting(RequestDto::getId).containsExactly(2L);
+        verify(requestService).updateStatuses(List.of(1L), RequestStatus.CONFIRMED, EVENT_ID);
+        verify(requestService).updateStatuses(List.of(2L), RequestStatus.REJECTED, EVENT_ID);
+        verify(requestService).rejectPending(EVENT_ID);
     }
 
     private RequestStatusUpdate buildUpdate(RequestStatus status, Long... requestIds) {

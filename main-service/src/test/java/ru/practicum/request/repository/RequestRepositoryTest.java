@@ -74,6 +74,44 @@ class RequestRepositoryTest {
                 .containsExactlyInAnyOrder(firstConfirmed.getId(), secondConfirmed.getId());
     }
 
+    @Test
+    void updateStatusByIdsInEvent_shouldUpdateOnlyGivenRequestsOfEvent() {
+        Event event = persistEvent("Первое");
+        Event otherEvent = persistEvent("Второе");
+        Request first = persistRequest(event, persistUser("Первый"), RequestStatus.PENDING);
+        Request second = persistRequest(event, persistUser("Второй"), RequestStatus.PENDING);
+        Request foreign = persistRequest(otherEvent, persistUser("Третий"), RequestStatus.PENDING);
+        flushAndClear();
+
+        requestRepository.updateStatusByIdsInEvent(
+                List.of(first.getId(), second.getId()), RequestStatus.CONFIRMED, event.getId());
+
+        assertThat(requestRepository.findById(first.getId()).orElseThrow().getStatus())
+                .isEqualTo(RequestStatus.CONFIRMED);
+        assertThat(requestRepository.findById(second.getId()).orElseThrow().getStatus())
+                .isEqualTo(RequestStatus.CONFIRMED);
+        assertThat(requestRepository.findById(foreign.getId()).orElseThrow().getStatus())
+                .isEqualTo(RequestStatus.PENDING);
+    }
+
+    @Test
+    void updateStatusByEventAndStatus_shouldUpdateAllMatchingRequests() {
+        Event event = persistEvent("Первое");
+        persistRequest(event, persistUser("Первый"), RequestStatus.PENDING);
+        persistRequest(event, persistUser("Второй"), RequestStatus.PENDING);
+        persistRequest(event, persistUser("Третий"), RequestStatus.CONFIRMED);
+        flushAndClear();
+
+        int updated = requestRepository.updateStatusByEventAndStatus(
+                event.getId(), RequestStatus.PENDING, RequestStatus.REJECTED);
+
+        assertThat(updated).isEqualTo(2);
+        assertThat(requestRepository.findAllByEventId(event.getId()))
+                .extracting(Request::getStatus)
+                .containsExactlyInAnyOrder(
+                        RequestStatus.CONFIRMED, RequestStatus.REJECTED, RequestStatus.REJECTED);
+    }
+
     private Event persistEvent(String title) {
         Category category = entityManager.persist(Category.builder().name(title + "-category").build());
         User initiator = entityManager.persist(User.builder()

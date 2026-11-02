@@ -268,4 +268,25 @@ class RequestServiceTest {
 
         assertThat(requestService.countConfirmedRequests(10L)).isEqualTo(3L);
     }
+
+    @Test
+    void updateStatuses_shouldUpdateRequestsOfEvent() {
+        requestService.updateStatuses(List.of(1L, 2L), RequestStatus.CONFIRMED, 10L);
+
+        verify(requestRepository).updateStatusByIdsInEvent(List.of(1L, 2L), RequestStatus.CONFIRMED, 10L);
+    }
+
+    @Test
+    void updateStatuses_whenNoIds_shouldNotCallRepository() {
+        requestService.updateStatuses(List.of(), RequestStatus.CONFIRMED, 10L);
+
+        verifyNoInteractions(requestRepository);
+    }
+
+    @Test
+    void rejectPending_shouldRejectAllPendingRequestsOfEvent() {
+        requestService.rejectPending(10L);
+
+        verify(requestRepository).updateStatusByEventAndStatus(10L, RequestStatus.PENDING, RequestStatus.REJECTED);
+    }
 }
