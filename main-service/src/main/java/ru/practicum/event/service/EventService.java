@@ -122,7 +122,12 @@ public class EventService {
         return getEvent(eventId, EventState.PUBLISHED);
     }
 
-    private Event getEvent(Long eventId) {
+    public Event getEventWithLock(Long eventId) {
+        return eventRepository.findByIdWithLock(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+    }
+
+    public Event getEvent(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
