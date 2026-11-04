@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.validator.constraints.Length;
 import ru.practicum.event.dto.response.EventDto;
 
 import java.util.Set;
@@ -25,10 +26,10 @@ public class CompilationDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Set<EventDto> events;
 
-    @NonNull
-    private Boolean pinned;
+    @Builder.Default
+    private Boolean pinned = false;
 
     @NotBlank
-
+    @Length(max = 50)
     private String title;
 }

@@ -1,12 +1,9 @@
 package ru.practicum.compilation.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.category.mapper.CategoryMapper;
-import ru.practicum.category.model.Category;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.event.mapper.EventMapper;
-import ru.practicum.user.mapper.UserMapper;
 
 import java.util.HashSet;
 import java.util.List;

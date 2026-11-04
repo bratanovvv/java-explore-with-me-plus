@@ -1,7 +1,6 @@
 package ru.practicum.compilation.service;
 
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,18 +23,20 @@ import java.util.Set;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-@AllArgsConstructor
 public class CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
 
+    public CompilationService(CompilationRepository compilationRepository, EventRepository eventRepository) {
+        this.compilationRepository = compilationRepository;
+        this.eventRepository = eventRepository;
+    }
+
     @Transactional
     public Compilation create(Compilation entity, Set<Long> eventsId) {
         entity.setEvents(getEvents(eventsId));
-        Compilation savedCompilation = compilationRepository.save(entity);
-        log.debug("Создана подборка событий = {}", savedCompilation);
-        return savedCompilation;
+        return compilationRepository.save(entity);
     }
 
     @Transactional
@@ -54,7 +55,7 @@ public class CompilationService {
     public Compilation update(Long compId, CompilationDto dto) {
         Compilation compilationEdit = getCompilationById(compId);
 
-        if (dto.getEvents() != null) {
+        if (dto.getEventsId() != null) {
             compilationEdit.setEvents(getEvents(dto.getEventsId()));
             log.debug("Изменение Событий на : {}", dto.getEvents());
         }

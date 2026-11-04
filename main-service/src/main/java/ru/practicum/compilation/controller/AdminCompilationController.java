@@ -39,6 +39,7 @@ public class AdminCompilationController {
     @PatchMapping("/{compId}")
     public CompilationDto update(@PathVariable @PositiveOrZero Long compId,
                                  @RequestBody CompilationDto dto) {
+
         return comMapper.toDto(compilationService.update(compId, dto));
     }
 }

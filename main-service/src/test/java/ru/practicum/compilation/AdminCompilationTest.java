@@ -50,15 +50,11 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
 
     @Test
     public void createCompilationWithNotExistEvent_ShouldReturnNotFound() throws Exception {
-        setEvents.add(999L);
-        log.info("Events  = {}", setEvents);
+        String dto = "{\"events\": [999], \"pinned\": false, \"title\": \"New compilation Created\"}";
+
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(CompilationDto.builder()
-                                .eventsId(setEvents)
-                                .pinned(false)
-                                .title("New compilation Created")
-                                .build())))
+                        .content(dto))
                 .andExpect(status().isNotFound());
     }
 

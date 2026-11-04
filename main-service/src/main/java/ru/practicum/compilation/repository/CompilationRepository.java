@@ -20,6 +20,9 @@ public interface CompilationRepository extends JpaRepository<Compilation, Long> 
     Page<Compilation> findAll(Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = {"events", "events.category", "events.initiator"})
+    @EntityGraph(
+            attributePaths = {"events", "events.category", "events.initiator"},
+            type = EntityGraph.EntityGraphType.LOAD
+    )
     Optional<Compilation> findById(Long id);
 }

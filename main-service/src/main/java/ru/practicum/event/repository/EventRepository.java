@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
@@ -37,4 +38,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from Event e where e.id = :id")
     Optional<Event> findByIdWithLock(@Param("id") Long id);
+
+    @Override
+    @EntityGraph(attributePaths = {"category", "initiator"})
+    List<Event> findAllById(Iterable<Long> ids);
 }
