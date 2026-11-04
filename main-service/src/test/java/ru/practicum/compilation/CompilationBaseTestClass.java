@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.practicum.category.dto.CategoryDto;
-import ru.practicum.compilation.dto.RequestCompilationDto;
+import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.event.dto.common.LocationDto;
 import ru.practicum.event.dto.request.EventRequestDto;
 import ru.practicum.user.dto.UserDto;
@@ -60,8 +60,8 @@ public class CompilationBaseTestClass {
     protected ResultActions createCompilation(Set<Long> listEvents, Boolean pinned, String title) throws Exception {
         return mockMvc.perform(post("/admin/compilations")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(RequestCompilationDto.builder()
-                                .events(listEvents)
+                        .content(objectMapper.writeValueAsString(CompilationDto.builder()
+                                .eventsId(listEvents)
                                 .pinned(pinned)
                                 .title(title)
                                 .build())))

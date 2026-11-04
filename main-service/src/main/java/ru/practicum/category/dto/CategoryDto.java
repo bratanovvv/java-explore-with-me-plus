@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CategoryDto {
 
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 

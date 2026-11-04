@@ -1,25 +1,25 @@
 package ru.practicum.compilation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.compilation.dto.RequestCompilationDto;
+import ru.practicum.compilation.dto.CompilationDto;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("Интеграционные тесты Админ: Подборки")
 @Transactional
+@Slf4j
 public class AdminCompilationTest extends CompilationBaseTestClass {
     private static final String URL = "/admin/compilations";
     private Set<Long> setEvents = new HashSet<>();
@@ -38,8 +38,8 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     public void createCompilation_ShouldReturnNewCompilationWithID() throws Exception {
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(RequestCompilationDto.builder()
-                                .events(setEvents)
+                        .content(objectMapper.writeValueAsString(CompilationDto.builder()
+                                .eventsId(setEvents)
                                 .pinned(false)
                                 .title("New compilation Created")
                                 .build())))
@@ -51,11 +51,11 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
     @Test
     public void createCompilationWithNotExistEvent_ShouldReturnNotFound() throws Exception {
         setEvents.add(999L);
-
+        log.info("Events  = {}", setEvents);
         mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(RequestCompilationDto.builder()
-                                .events(setEvents)
+                        .content(objectMapper.writeValueAsString(CompilationDto.builder()
+                                .eventsId(setEvents)
                                 .pinned(false)
                                 .title("New compilation Created")
                                 .build())))
@@ -64,8 +64,8 @@ public class AdminCompilationTest extends CompilationBaseTestClass {
 
     @Test
     public void createCompilationWithWrongField_ShouldReturnApiError() throws Exception {
-        String json = objectMapper.writeValueAsString(RequestCompilationDto.builder()
-                .events(setEvents)
+        String json = objectMapper.writeValueAsString(CompilationDto.builder()
+                .eventsId(setEvents)
                 .pinned(false)
                 .title("New compilation Created")
                 .build());

@@ -1,16 +1,14 @@
 package ru.practicum.compilation.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.compilation.dto.ResponseCompilationDto;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.compilation.dto.CompilationDto;
+import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.service.CompilationService;
+import ru.practicum.event.dto.response.EventDto;
 import ru.practicum.utils.params.PageParams;
 
 import java.util.List;
@@ -18,22 +16,29 @@ import java.util.List;
 @RestController
 @RequestMapping("/compilations")
 @Validated
-@AllArgsConstructor
 public class PublicCompilationController {
 
     private final CompilationService compilationService;
+    private final CompilationMapper comMapper;
 
-    @GetMapping()
-    public List<ResponseCompilationDto> getCompilation(
-            @RequestParam(name = "pinned", required = false, defaultValue = "false") Boolean pinned,
+    public PublicCompilationController(CompilationService compilationService, CompilationMapper comMapper) {
+        this.compilationService = compilationService;
+        this.comMapper = comMapper;
+    }
+
+    @GetMapping
+    @JsonView(EventDto.FullEvent.class)
+    public List<CompilationDto> getCompilation(
+            @RequestParam(name = "pinned", required = false) Boolean pinned,
             @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
             @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size
     ) {
-        return compilationService.getList(pinned, new PageParams(from, size));
+        return comMapper.toDtoList(compilationService.getList(pinned, new PageParams(from, size)));
     }
 
     @GetMapping("/{compId}")
-    public ResponseCompilationDto getCompilationById(@PathVariable @PositiveOrZero Long compId) {
-        return compilationService.getById(compId);
+    @JsonView(EventDto.FullEvent.class)
+    public CompilationDto getCompilationById(@PathVariable @PositiveOrZero Long compId) {
+        return comMapper.toDto(compilationService.getCompilationById(compId));
     }
 }

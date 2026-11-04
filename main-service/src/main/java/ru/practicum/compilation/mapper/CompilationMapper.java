@@ -1,25 +1,27 @@
 package ru.practicum.compilation.mapper;
 
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.compilation.dto.RequestCompilationDto;
-import ru.practicum.compilation.dto.ResponseCompilationDto;
+import ru.practicum.category.mapper.CategoryMapper;
+import ru.practicum.category.model.Category;
+import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.event.mapper.EventMapper;
-import ru.practicum.event.model.Event;
+import ru.practicum.user.mapper.UserMapper;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@AllArgsConstructor
 public class CompilationMapper {
-    private EventMapper eMapper;
+    private final EventMapper eMapper;
 
-    public ResponseCompilationDto toDto(Compilation entity) {
-        return ResponseCompilationDto.builder()
+    public CompilationMapper(EventMapper eMapper) {
+        this.eMapper = eMapper;
+    }
+
+    public CompilationDto toDto(Compilation entity) {
+        return CompilationDto.builder()
                 .id(entity.getId())
                 .events(entity.getEvents() == null ? new HashSet<>() :
                         entity.getEvents().stream().map(eMapper::toDto).collect(Collectors.toSet()))
@@ -28,15 +30,14 @@ public class CompilationMapper {
                 .build();
     }
 
-    public Compilation toEntity(Set<Event> events, RequestCompilationDto dto) {
+    public Compilation toEntity(CompilationDto dto) {
         return Compilation.builder()
                 .pinned(dto.getPinned())
                 .title(dto.getTitle())
-                .events(events)
                 .build();
     }
 
-    public List<ResponseCompilationDto> toDtoList(List<Compilation> entities) {
+    public List<CompilationDto> toDtoList(List<Compilation> entities) {
         return entities.stream().map(this::toDto).toList();
     }
 }

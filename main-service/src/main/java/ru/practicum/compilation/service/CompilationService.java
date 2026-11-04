@@ -8,9 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.compilation.dto.RequestCompilationDto;
-import ru.practicum.compilation.dto.ResponseCompilationDto;
-import ru.practicum.compilation.mapper.CompilationMapper;
+import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.repository.CompilationRepository;
 import ru.practicum.event.model.Event;
@@ -30,15 +28,14 @@ import java.util.Set;
 public class CompilationService {
 
     private final CompilationRepository compilationRepository;
-    private final CompilationMapper mapper;
     private final EventRepository eventRepository;
 
     @Transactional
-    public ResponseCompilationDto create(RequestCompilationDto dto) {
-        Compilation compilation = mapper.toEntity(getEvents(dto.getEvents()), dto);
-        Compilation savedCompilation = compilationRepository.save(compilation);
+    public Compilation create(Compilation entity, Set<Long> eventsId) {
+        entity.setEvents(getEvents(eventsId));
+        Compilation savedCompilation = compilationRepository.save(entity);
         log.debug("Создана подборка событий = {}", savedCompilation);
-        return mapper.toDto(savedCompilation);
+        return savedCompilation;
     }
 
     @Transactional
@@ -48,17 +45,17 @@ public class CompilationService {
         log.debug("Удалена подборка : {}", compId);
     }
 
-    private Compilation getCompilationById(Long compId) {
+    public Compilation getCompilationById(Long compId) {
         return compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id - " + compId + " was not found."));
     }
 
     @Transactional
-    public ResponseCompilationDto update(Long compId, RequestCompilationDto dto) {
+    public Compilation update(Long compId, CompilationDto dto) {
         Compilation compilationEdit = getCompilationById(compId);
 
         if (dto.getEvents() != null) {
-            compilationEdit.setEvents(getEvents(dto.getEvents()));
+            compilationEdit.setEvents(getEvents(dto.getEventsId()));
             log.debug("Изменение Событий на : {}", dto.getEvents());
         }
 
@@ -74,16 +71,16 @@ public class CompilationService {
             log.debug("Изменение название на : {}", dto.getTitle());
         }
         log.debug("Обновлена подбдорка : {}", compId);
-        return mapper.toDto(compilationEdit);
+        return compilationEdit;
     }
 
-    public List<ResponseCompilationDto> getList(Boolean pinned, PageParams params) {
+    public List<Compilation> getList(Boolean pinned, PageParams params) {
         log.debug("Пришел запрос с pinned = {} и PageParams = {}", pinned, params);
         Pageable pageable = params.toPageable(Sort.by("id"));
         Page<Compilation> page = (pinned == null)
                 ? compilationRepository.findAll(pageable)
                 : compilationRepository.findByPinned(pinned, pageable);
-        return mapper.toDtoList(page.getContent());
+        return page.getContent();
     }
 
 
@@ -96,11 +93,5 @@ public class CompilationService {
             throw new NotFoundException("Events not found: " + missingEvents);
         }
         return eventSet;
-    }
-
-    public ResponseCompilationDto getById(Long compId) {
-        return compilationRepository.findById(compId)
-                .map(mapper::toDto)
-                .orElseThrow(() -> new NotFoundException("Not found compilation with id = " + compId));
     }
 }
