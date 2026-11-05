@@ -6,19 +6,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.compilation.dto.CompilationDto;
-import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.service.CompilationService;
+import ru.practicum.utils.interfaces.Mapper;
 
 @RestController
 @RequestMapping("/admin/compilations")
 @Validated
 public class AdminCompilationController {
 
-    public final CompilationService compilationService;
-    public final CompilationMapper comMapper;
+    private final CompilationService compilationService;
+    private final Mapper<Compilation, CompilationDto> comMapper;
 
-    public AdminCompilationController(CompilationService compilationService, CompilationMapper comMapper) {
+    public AdminCompilationController(CompilationService compilationService,
+                                      Mapper<Compilation, CompilationDto> comMapper) {
         this.compilationService = compilationService;
         this.comMapper = comMapper;
     }

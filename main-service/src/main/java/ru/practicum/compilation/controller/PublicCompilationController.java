@@ -6,9 +6,10 @@ import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.compilation.dto.CompilationDto;
-import ru.practicum.compilation.mapper.CompilationMapper;
+import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.service.CompilationService;
 import ru.practicum.event.dto.response.EventDto;
+import ru.practicum.utils.interfaces.Mapper;
 import ru.practicum.utils.params.PageParams;
 
 import java.util.List;
@@ -19,9 +20,10 @@ import java.util.List;
 public class PublicCompilationController {
 
     private final CompilationService compilationService;
-    private final CompilationMapper comMapper;
+    private final Mapper<Compilation, CompilationDto> comMapper;
 
-    public PublicCompilationController(CompilationService compilationService, CompilationMapper comMapper) {
+    public PublicCompilationController(CompilationService compilationService,
+                                       Mapper<Compilation, CompilationDto> comMapper) {
         this.compilationService = compilationService;
         this.comMapper = comMapper;
     }

@@ -26,8 +26,7 @@ public class CompilationDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Set<EventDto> events;
 
-    @Builder.Default
-    private Boolean pinned = false;
+    private Boolean pinned;
 
     @NotBlank
     @Length(max = 50)

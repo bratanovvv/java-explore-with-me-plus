@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.repository.CompilationRepository;
@@ -36,6 +37,9 @@ public class CompilationService {
     @Transactional
     public Compilation create(Compilation entity, Set<Long> eventsId) {
         entity.setEvents(getEvents(eventsId));
+        if (entity.getPinned() == null) {
+            entity.setPinned(false);
+        }
         return compilationRepository.save(entity);
     }
 
@@ -65,11 +69,12 @@ public class CompilationService {
             log.debug("Изменения статуса Зареплено изменено на : {}", dto.getPinned());
         }
 
-        if (dto.getTitle() != null && !dto.getTitle().isBlank()) {
-            if (dto.getTitle().length() > 50)
-                throw new BadRequestException("Длина title не может быть больше 50 символов");
+        if (dto.getTitle() != null) {
+            if (dto.getTitle().isBlank() || dto.getTitle().length() > 50) {
+                throw new BadRequestException("Title length must be between 1 and 50 characters");
+            }
             compilationEdit.setTitle(dto.getTitle());
-            log.debug("Изменение название на : {}", dto.getTitle());
+            log.debug("Изменение названия на : {}", dto.getTitle());
         }
         log.debug("Обновлена подбдорка : {}", compId);
         return compilationEdit;
@@ -86,7 +91,9 @@ public class CompilationService {
 
 
     private Set<Event> getEvents(Set<Long> eventIds) {
-        if (eventIds == null || eventIds.isEmpty()) return new HashSet<>();
+        if (CollectionUtils.isEmpty(eventIds)) {
+            return Set.of();
+        }
         Set<Event> eventSet = new HashSet<>(eventRepository.findAllById(eventIds));
         if (eventSet.size() != eventIds.size()) {
             Set<Long> missingEvents = new HashSet<>(eventIds);
