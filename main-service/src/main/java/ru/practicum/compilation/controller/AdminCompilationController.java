@@ -1,5 +1,6 @@
 package ru.practicum.compilation.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.service.CompilationService;
+import ru.practicum.event.dto.response.EventDto;
 import ru.practicum.utils.interfaces.Mapper;
 
 @RestController
@@ -26,6 +28,7 @@ public class AdminCompilationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @JsonView(EventDto.ShortEvent.class)
     public CompilationDto create(@RequestBody @Valid CompilationDto dto) {
         Compilation response = compilationService.create(comMapper.toEntity(dto), dto.getEventsId());
         return comMapper.toDto(response);
@@ -38,6 +41,7 @@ public class AdminCompilationController {
     }
 
     @PatchMapping("/{compId}")
+    @JsonView(EventDto.ShortEvent.class)
     public CompilationDto update(@PathVariable @PositiveOrZero Long compId,
                                  @RequestBody CompilationDto dto) {
 

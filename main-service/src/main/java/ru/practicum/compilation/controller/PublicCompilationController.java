@@ -29,7 +29,7 @@ public class PublicCompilationController {
     }
 
     @GetMapping
-    @JsonView(EventDto.FullEvent.class)
+    @JsonView(EventDto.ShortEvent.class)
     public List<CompilationDto> getCompilation(
             @RequestParam(name = "pinned", required = false) Boolean pinned,
             @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
@@ -39,7 +39,7 @@ public class PublicCompilationController {
     }
 
     @GetMapping("/{compId}")
-    @JsonView(EventDto.FullEvent.class)
+    @JsonView(EventDto.ShortEvent.class)
     public CompilationDto getCompilationById(@PathVariable @PositiveOrZero Long compId) {
         return comMapper.toDto(compilationService.getCompilationById(compId));
     }
