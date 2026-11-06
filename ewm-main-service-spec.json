@@ -13,36 +13,40 @@
   ],
   "tags": [
     {
-      "description": "Публичный API для работы с подборками событий",
-      "name": "Public: Подборки событий"
-    },
-    {
-      "description": "API для работы с категориями",
-      "name": "Admin: Категории"
-    },
-    {
-      "description": "Закрытый API для работы с событиями",
-      "name": "Private: События"
+      "description": "API для работы с пользователями",
+      "name": "Admin: Пользователи"
     },
     {
       "description": "Публичный API для работы с категориями",
       "name": "Public: Категории"
     },
     {
-      "description": "API для работы с событиями",
-      "name": "Admin: События"
+      "description": "API для работы с категориями",
+      "name": "Admin: Категории"
     },
     {
       "description": "Публичный API для работы с событиями",
       "name": "Public: События"
     },
     {
+      "description": "API для работы с событиями",
+      "name": "Admin: События"
+    },
+    {
+      "description": "Закрытый API для работы с событиями",
+      "name": "Private: События"
+    },
+    {
       "description": "Закрытый API для работы с запросами текущего пользователя на участие в событиях",
       "name": "Private: Запросы на участие"
     },
     {
-      "description": "API для работы с пользователями",
-      "name": "Admin: Пользователи"
+      "description": "Закрытый API для работы с запросами на участие в событиях текущего пользователя",
+      "name": "Private: Запросы на события"
+    },
+    {
+      "description": "Публичный API для работы с подборками событий",
+      "name": "Public: Подборки событий"
     },
     {
       "description": "API для работы с подборками событий",
@@ -50,568 +54,6 @@
     }
   ],
   "paths": {
-    "/admin/categories": {
-      "post": {
-        "description": "Обратите внимание: имя категории должно быть уникальным",
-        "operationId": "addCategory",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewCategoryDto"
-              }
-            }
-          },
-          "description": "данные добавляемой категории",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryDto"
-                }
-              }
-            },
-            "description": "Категория добавлена"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Field: name. Error: must not be blank. Value: null",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "CONFLICT",
-                  "reason": "Integrity constraint has been violated.",
-                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Нарушение целостности данных"
-          }
-        },
-        "summary": "Добавление новой категории",
-        "tags": [
-          "Admin: Категории"
-        ]
-      }
-    },
-    "/admin/categories/{catId}": {
-      "delete": {
-        "description": "Обратите внимание: с категорией не должно быть связано ни одного события.",
-        "operationId": "deleteCategory",
-        "parameters": [
-          {
-            "description": "id категории",
-            "in": "path",
-            "name": "catId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Категория удалена"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Category with id=27 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Категория не найдена или недоступна"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "CONFLICT",
-                  "reason": "For the requested operation the conditions are not met.",
-                  "message": "The category is not empty",
-                  "timestamp": "2023-01-21 16:56:19"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Существуют события, связанные с категорией"
-          }
-        },
-        "summary": "Удаление категории",
-        "tags": [
-          "Admin: Категории"
-        ]
-      },
-      "patch": {
-        "description": "Обратите внимание: имя категории должно быть уникальным",
-        "operationId": "updateCategory",
-        "parameters": [
-          {
-            "description": "id категории",
-            "in": "path",
-            "name": "catId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CategoryDto"
-              }
-            }
-          },
-          "description": "Данные категории для изменения",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryDto"
-                }
-              }
-            },
-            "description": "Данные категории изменены"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Category with id=27 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Категория не найдена или недоступна"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "CONFLICT",
-                  "reason": "Integrity constraint has been violated.",
-                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Нарушение целостности данных"
-          }
-        },
-        "summary": "Изменение категории",
-        "tags": [
-          "Admin: Категории"
-        ]
-      }
-    },
-    "/admin/compilations": {
-      "post": {
-        "operationId": "saveCompilation",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewCompilationDto"
-              }
-            }
-          },
-          "description": "данные новой подборки",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompilationDto"
-                }
-              }
-            },
-            "description": "Подборка добавлена"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Field: title. Error: must not be blank. Value: null",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "CONFLICT",
-                  "reason": "Integrity constraint has been violated.",
-                  "message": "could not execute statement; SQL [n/a]; constraint [uq_compilation_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Нарушение целостности данных"
-          }
-        },
-        "summary": "Добавление новой подборки (подборка может не содержать событий)",
-        "tags": [
-          "Admin: Подборки событий"
-        ]
-      }
-    },
-    "/admin/compilations/{compId}": {
-      "delete": {
-        "operationId": "deleteCompilation",
-        "parameters": [
-          {
-            "description": "id подборки",
-            "in": "path",
-            "name": "compId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Подборка удалена"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Compilation with id=11 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Подборка не найдена или недоступна"
-          }
-        },
-        "summary": "Удаление подборки",
-        "tags": [
-          "Admin: Подборки событий"
-        ]
-      },
-      "patch": {
-        "operationId": "updateCompilation",
-        "parameters": [
-          {
-            "description": "id подборки",
-            "in": "path",
-            "name": "compId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCompilationRequest"
-              }
-            }
-          },
-          "description": "данные для обновления подборки",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompilationDto"
-                }
-              }
-            },
-            "description": "Подборка обновлена"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Category with id=27 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Подборка не найдена или недоступна"
-          }
-        },
-        "summary": "Обновить информацию о подборке",
-        "tags": [
-          "Admin: Подборки событий"
-        ]
-      }
-    },
-    "/admin/events": {
-      "get": {
-        "description": "Эндпоинт возвращает полную информацию обо всех событиях подходящих под переданные условия\n\nВ случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список",
-        "operationId": "getEvents_2",
-        "parameters": [
-          {
-            "description": "список id пользователей, чьи события нужно найти",
-            "in": "query",
-            "name": "users",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          },
-          {
-            "description": "список состояний в которых находятся искомые события",
-            "in": "query",
-            "name": "states",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "description": "список id категорий в которых будет вестись поиск",
-            "in": "query",
-            "name": "categories",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          },
-          {
-            "description": "дата и время не раньше которых должно произойти событие",
-            "in": "query",
-            "name": "rangeStart",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "дата и время не позже которых должно произойти событие",
-            "in": "query",
-            "name": "rangeEnd",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "количество событий, которые нужно пропустить для формирования текущего набора",
-            "in": "query",
-            "name": "from",
-            "required": false,
-            "schema": {
-              "minimum": 0,
-              "type": "integer",
-              "format": "int32",
-              "default": 0
-            }
-          },
-          {
-            "description": "количество событий в наборе",
-            "in": "query",
-            "name": "size",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 10
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventFullDto"
-                  }
-                }
-              }
-            },
-            "description": "События найдены"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
-          }
-        },
-        "summary": "Поиск событий",
-        "tags": [
-          "Admin: События"
-        ]
-      }
-    },
-    "/admin/events/{eventId}": {
-      "patch": {
-        "description": "Редактирование данных любого события администратором. Валидация данных не требуется.\nОбратите внимание:\n - дата начала изменяемого события должна быть не ранее чем за час от даты публикации. (Ожидается код ошибки 409)\n- событие можно публиковать, только если оно в состоянии ожидания публикации (Ожидается код ошибки 409)\n- событие можно отклонить, только если оно еще не опубликовано (Ожидается код ошибки 409)",
-        "operationId": "updateEvent_1",
-        "parameters": [
-          {
-            "description": "id события",
-            "in": "path",
-            "name": "eventId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEventAdminRequest"
-              }
-            }
-          },
-          "description": "Данные для изменения информации о событии",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventFullDto"
-                }
-              }
-            },
-            "description": "Событие отредактировано"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Event with id=2 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Событие не найдено или недоступно"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "FORBIDDEN",
-                  "reason": "For the requested operation the conditions are not met.",
-                  "message": "Cannot publish the event because it's not in the right state: PUBLISHED",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Событие не удовлетворяет правилам редактирования"
-          }
-        },
-        "summary": "Редактирование данных события и его статуса (отклонение/публикация).",
-        "tags": [
-          "Admin: События"
-        ]
-      }
-    },
     "/admin/users": {
       "get": {
         "description": "Возвращает информацию обо всех пользователях (учитываются параметры ограничения выборки), либо о конкретных (учитываются указанные идентификаторы)\n\nВ случае, если по заданным фильтрам не найдено ни одного пользователя, возвращает пустой список",
@@ -927,57 +369,31 @@
         ]
       }
     },
-    "/compilations": {
-      "get": {
-        "description": "В случае, если по заданным фильтрам не найдено ни одной подборки, возвращает пустой список",
-        "operationId": "getCompilations",
-        "parameters": [
-          {
-            "description": "искать только закрепленные/не закрепленные подборки",
-            "in": "query",
-            "name": "pinned",
-            "required": false,
-            "schema": {
-              "type": "boolean"
+    "/admin/categories": {
+      "post": {
+        "description": "Обратите внимание: имя категории должно быть уникальным",
+        "operationId": "addCategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCategoryDto"
+              }
             }
           },
-          {
-            "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
-            "in": "query",
-            "name": "from",
-            "required": false,
-            "schema": {
-              "minimum": 0,
-              "type": "integer",
-              "format": "int32",
-              "default": 0
-            }
-          },
-          {
-            "description": "количество элементов в наборе",
-            "in": "query",
-            "name": "size",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 10
-            }
-          }
-        ],
+          "description": "данные добавляемой категории",
+          "required": true
+        },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CompilationDto"
-                  }
+                  "$ref": "#/components/schemas/CategoryDto"
                 }
               }
             },
-            "description": "Найдены подборки событий"
+            "description": "Категория добавлена"
           },
           "400": {
             "content": {
@@ -985,7 +401,7 @@
                 "example": {
                   "status": "BAD_REQUEST",
                   "reason": "Incorrectly made request.",
-                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "message": "Field: name. Error: must not be blank. Value: null",
                   "timestamp": "2022-09-07 09:10:50"
                 },
                 "schema": {
@@ -994,23 +410,39 @@
               }
             },
             "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
           }
         },
-        "summary": "Получение подборок событий",
+        "summary": "Добавление новой категории",
         "tags": [
-          "Public: Подборки событий"
+          "Admin: Категории"
         ]
       }
     },
-    "/compilations/{compId}": {
-      "get": {
-        "description": "В случае, если подборки с заданным id не найдено, возвращает статус код 404",
-        "operationId": "getCompilation",
+    "/admin/categories/{catId}": {
+      "delete": {
+        "description": "Обратите внимание: с категорией не должно быть связано ни одного события.",
+        "operationId": "deleteCategory",
         "parameters": [
           {
-            "description": "id подборки",
+            "description": "id категории",
             "in": "path",
-            "name": "compId",
+            "name": "catId",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1019,31 +451,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompilationDto"
-                }
-              }
-            },
-            "description": "Подборка событий найдена"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Failed to convert value of type java.lang.String to required type long; nested exception is java.lang.NumberFormatException: For input string: ad",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
+          "204": {
+            "description": "Категория удалена"
           },
           "404": {
             "content": {
@@ -1051,7 +460,7 @@
                 "example": {
                   "status": "NOT_FOUND",
                   "reason": "The required object was not found.",
-                  "message": "Compilation with id=84 was not found",
+                  "message": "Category with id=27 was not found",
                   "timestamp": "2022-09-07 09:10:50"
                 },
                 "schema": {
@@ -1059,12 +468,103 @@
                 }
               }
             },
-            "description": "Подборка не найдена или недоступна"
+            "description": "Категория не найдена или недоступна"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "For the requested operation the conditions are not met.",
+                  "message": "The category is not empty",
+                  "timestamp": "2023-01-21 16:56:19"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Существуют события, связанные с категорией"
           }
         },
-        "summary": "Получение подборки событий по его id",
+        "summary": "Удаление категории",
         "tags": [
-          "Public: Подборки событий"
+          "Admin: Категории"
+        ]
+      },
+      "patch": {
+        "description": "Обратите внимание: имя категории должно быть уникальным",
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "description": "id категории",
+            "in": "path",
+            "name": "catId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDto"
+              }
+            }
+          },
+          "description": "Данные категории для изменения",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDto"
+                }
+              }
+            },
+            "description": "Данные категории изменены"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Category with id=27 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Категория не найдена или недоступна"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Изменение категории",
+        "tags": [
+          "Admin: Категории"
         ]
       }
     },
@@ -1271,6 +771,205 @@
         "summary": "Получение подробной информации об опубликованном событии по его идентификатору",
         "tags": [
           "Public: События"
+        ]
+      }
+    },
+    "/admin/events": {
+      "get": {
+        "description": "Эндпоинт возвращает полную информацию обо всех событиях подходящих под переданные условия\n\nВ случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список",
+        "operationId": "getEvents_2",
+        "parameters": [
+          {
+            "description": "список id пользователей, чьи события нужно найти",
+            "in": "query",
+            "name": "users",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "список состояний в которых находятся искомые события",
+            "in": "query",
+            "name": "states",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "description": "список id категорий в которых будет вестись поиск",
+            "in": "query",
+            "name": "categories",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "дата и время не раньше которых должно произойти событие",
+            "in": "query",
+            "name": "rangeStart",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "дата и время не позже которых должно произойти событие",
+            "in": "query",
+            "name": "rangeEnd",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "количество событий, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество событий в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventFullDto"
+                  }
+                }
+              }
+            },
+            "description": "События найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Поиск событий",
+        "tags": [
+          "Admin: События"
+        ]
+      }
+    },
+    "/admin/events/{eventId}": {
+      "patch": {
+        "description": "Редактирование данных любого события администратором. Валидация данных не требуется.\nОбратите внимание:\n - дата начала изменяемого события должна быть не ранее чем за час от даты публикации. (Ожидается код ошибки 409)\n- событие можно публиковать, только если оно в состоянии ожидания публикации (Ожидается код ошибки 409)\n- событие можно отклонить, только если оно еще не опубликовано (Ожидается код ошибки 409)",
+        "operationId": "updateEvent_1",
+        "parameters": [
+          {
+            "description": "id события",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventAdminRequest"
+              }
+            }
+          },
+          "description": "Данные для изменения информации о событии",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventFullDto"
+                }
+              }
+            },
+            "description": "Событие отредактировано"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Event with id=2 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие не найдено или недоступно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "FORBIDDEN",
+                  "reason": "For the requested operation the conditions are not met.",
+                  "message": "Cannot publish the event because it's not in the right state: PUBLISHED",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие не удовлетворяет правилам редактирования"
+          }
+        },
+        "summary": "Редактирование данных события и его статуса (отклонение/публикация).",
+        "tags": [
+          "Admin: События"
         ]
       }
     },
@@ -1602,170 +1301,6 @@
         ]
       }
     },
-    "/users/{userId}/events/{eventId}/requests": {
-      "get": {
-        "description": "В случае, если по заданным фильтрам не найдено ни одной заявки, возвращает пустой список",
-        "operationId": "getEventParticipants",
-        "parameters": [
-          {
-            "description": "id текущего пользователя",
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "description": "id события",
-            "in": "path",
-            "name": "eventId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ParticipationRequestDto"
-                  }
-                }
-              }
-            },
-            "description": "Найдены запросы на участие"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
-          }
-        },
-        "summary": "Получение информации о запросах на участие в событии текущего пользователя",
-        "tags": [
-          "Private: События"
-        ]
-      },
-      "patch": {
-        "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)\n- статус можно изменить только у заявок, находящихся в состоянии ожидания (Ожидается код ошибки 409)\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить",
-        "operationId": "changeRequestStatus",
-        "parameters": [
-          {
-            "description": "id текущего пользователя",
-            "in": "path",
-            "name": "userId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "description": "id события текущего пользователя",
-            "in": "path",
-            "name": "eventId",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EventRequestStatusUpdateRequest"
-              }
-            }
-          },
-          "description": "Новый статус для заявок на участие в событии текущего пользователя",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventRequestStatusUpdateResult"
-                }
-              }
-            },
-            "description": "Статус заявок изменён"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "BAD_REQUEST",
-                  "reason": "Incorrectly made request.",
-                  "message": "Request must have status PENDING",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Запрос составлен некорректно"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "NOT_FOUND",
-                  "reason": "The required object was not found.",
-                  "message": "Event with id=321 was not found",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Событие не найдено или недоступно"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "status": "CONFLICT",
-                  "reason": "For the requested operation the conditions are not met.",
-                  "message": "The participant limit has been reached",
-                  "timestamp": "2022-09-07 09:10:50"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Достигнут лимит одобренных заявок"
-          }
-        },
-        "summary": "Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя",
-        "tags": [
-          "Private: События"
-        ]
-      }
-    },
     "/users/{userId}/requests": {
       "get": {
         "description": "В случае, если по заданным фильтрам не найдено ни одной заявки, возвращает пустой список",
@@ -1981,6 +1516,475 @@
         "summary": "Отмена своего запроса на участие в событии",
         "tags": [
           "Private: Запросы на участие"
+        ]
+      }
+    },
+    "/users/{userId}/events/{eventId}/requests": {
+      "get": {
+        "description": "В случае, если по заданным фильтрам не найдено ни одной заявки, возвращает пустой список",
+        "operationId": "getEventParticipants",
+        "parameters": [
+          {
+            "description": "id текущего пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "description": "id события",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParticipationRequestDto"
+                  }
+                }
+              }
+            },
+            "description": "Найдены запросы на участие"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение информации о запросах на участие в событии текущего пользователя",
+        "tags": [
+          "Private: Запросы на события"
+        ]
+      },
+      "patch": {
+        "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)\n- статус можно изменить только у заявок, находящихся в состоянии ожидания (Ожидается код ошибки 409)\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить",
+        "operationId": "changeRequestStatus",
+        "parameters": [
+          {
+            "description": "id текущего пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "description": "id события текущего пользователя",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequestStatusUpdateRequest"
+              }
+            }
+          },
+          "description": "Новый статус для заявок на участие в событии текущего пользователя",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventRequestStatusUpdateResult"
+                }
+              }
+            },
+            "description": "Статус заявок изменён"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Request must have status PENDING",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Event with id=321 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие не найдено или недоступно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "For the requested operation the conditions are not met.",
+                  "message": "The participant limit has been reached",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Достигнут лимит одобренных заявок"
+          }
+        },
+        "summary": "Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя",
+        "tags": [
+          "Private: Запросы на события"
+        ]
+      }
+    },
+    "/compilations": {
+      "get": {
+        "description": "В случае, если по заданным фильтрам не найдено ни одной подборки, возвращает пустой список",
+        "operationId": "getCompilations",
+        "parameters": [
+          {
+            "description": "искать только закрепленные/не закрепленные подборки",
+            "in": "query",
+            "name": "pinned",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество элементов в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompilationDto"
+                  }
+                }
+              }
+            },
+            "description": "Найдены подборки событий"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение подборок событий",
+        "tags": [
+          "Public: Подборки событий"
+        ]
+      }
+    },
+    "/compilations/{compId}": {
+      "get": {
+        "description": "В случае, если подборки с заданным id не найдено, возвращает статус код 404",
+        "operationId": "getCompilation",
+        "parameters": [
+          {
+            "description": "id подборки",
+            "in": "path",
+            "name": "compId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompilationDto"
+                }
+              }
+            },
+            "description": "Подборка событий найдена"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type long; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Compilation with id=84 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Подборка не найдена или недоступна"
+          }
+        },
+        "summary": "Получение подборки событий по его id",
+        "tags": [
+          "Public: Подборки событий"
+        ]
+      }
+    },
+    "/admin/compilations": {
+      "post": {
+        "operationId": "saveCompilation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCompilationDto"
+              }
+            }
+          },
+          "description": "данные новой подборки",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompilationDto"
+                }
+              }
+            },
+            "description": "Подборка добавлена"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Field: title. Error: must not be blank. Value: null",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_compilation_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление новой подборки (подборка может не содержать событий)",
+        "tags": [
+          "Admin: Подборки событий"
+        ]
+      }
+    },
+    "/admin/compilations/{compId}": {
+      "delete": {
+        "operationId": "deleteCompilation",
+        "parameters": [
+          {
+            "description": "id подборки",
+            "in": "path",
+            "name": "compId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Подборка удалена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Compilation with id=11 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Подборка не найдена или недоступна"
+          }
+        },
+        "summary": "Удаление подборки",
+        "tags": [
+          "Admin: Подборки событий"
+        ]
+      },
+      "patch": {
+        "operationId": "updateCompilation",
+        "parameters": [
+          {
+            "description": "id подборки",
+            "in": "path",
+            "name": "compId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCompilationRequest"
+              }
+            }
+          },
+          "description": "данные для обновления подборки",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompilationDto"
+                }
+              }
+            },
+            "description": "Подборка обновлена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Category with id=27 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Подборка не найдена или недоступна"
+          }
+        },
+        "summary": "Обновить информацию о подборке",
+        "tags": [
+          "Admin: Подборки событий"
         ]
       }
     }
