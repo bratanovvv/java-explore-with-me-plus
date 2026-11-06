@@ -150,7 +150,7 @@ class PublicEventControllerTest {
                 .title("Событие")
                 .annotation("Аннотация события")
                 .description("Описание события")
-                .category(CategoryDto.builder().id(2L).name("Концерты").build())
+                .category(new CategoryDto(2L, "Концерты"))
                 .paid(false)
                 .eventDate(LocalDateTime.now().plusDays(1))
                 .initiator(new UserDto(3L, "Иван", "ivan@example.com"))

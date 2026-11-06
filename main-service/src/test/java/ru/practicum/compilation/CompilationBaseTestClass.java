@@ -71,9 +71,7 @@ public class CompilationBaseTestClass {
     protected ResultActions createCategory() throws Exception {
         return mockMvc.perform(post("/admin/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(CategoryDto.builder()
-                                .name("New Category")
-                                .build())))
+                        .content(objectMapper.writeValueAsString(new CategoryDto(null, "New Category"))))
                 .andExpect(status().isCreated());
     }
 

@@ -176,7 +176,7 @@ class PrivateEventControllerTest {
                 .title("Событие")
                 .annotation("Аннотация нового события")
                 .description("Описание нового события")
-                .category(CategoryDto.builder().id(2L).name("Концерты").build())
+                .category(new CategoryDto(2L, "Концерты"))
                 .paid(false)
                 .participantLimit(0)
                 .requestModeration(true)
