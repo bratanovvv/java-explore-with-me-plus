@@ -6,9 +6,9 @@ spring:
     name: stats-server
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:6541/ewm-stats}
-    username: ${SPRING_DATASOURCE_USERNAME:stats}
-    password: ${SPRING_DATASOURCE_PASSWORD:stats}
+    url: ${EWM_STATS_DB_URL:jdbc:postgresql://localhost:6541/ewm-stats}
+    username: ${EWM_STATS_DB_USERNAME:stats}
+    password: ${EWM_STATS_DB_PASSWORD:stats}
   jpa:
     hibernate:
       ddl-auto: none
