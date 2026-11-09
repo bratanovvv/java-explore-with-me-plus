@@ -1,6 +1,5 @@
 package ru.practicum.comment.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import ru.practicum.comment.repository.CommentRepository;
 import ru.practicum.event.service.EventService;
 import ru.practicum.utils.params.PageParams;
 
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class PublicCommentService {
