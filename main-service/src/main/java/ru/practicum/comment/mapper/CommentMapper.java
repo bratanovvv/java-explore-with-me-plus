@@ -2,13 +2,8 @@ package ru.practicum.comment.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.comment.dto.CommentDto;
-import ru.practicum.comment.dto.CommentRequestDto;
 import ru.practicum.comment.model.Comment;
-import ru.practicum.comment.model.CommentStatus;
-import ru.practicum.event.model.Event;
-import ru.practicum.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -31,18 +26,6 @@ public class CommentMapper {
         return comments.stream()
                 .map(this::toDto)
                 .toList();
-    }
-
-    public Comment toEntity(CommentRequestDto dto, Event event, User author) {
-        if (dto == null) return null;
-
-        return Comment.builder()
-                .text(dto.getText())
-                .event(event)
-                .author(author)
-                .created(LocalDateTime.now())
-                .status(CommentStatus.PENDING)
-                .build();
     }
 }
 
