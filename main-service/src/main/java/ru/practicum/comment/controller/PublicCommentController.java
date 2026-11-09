@@ -19,7 +19,7 @@ import ru.practicum.utils.params.PageParams;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/comments")
 public class PublicCommentController {
 
     private final PublicCommentService commentService;
@@ -30,7 +30,7 @@ public class PublicCommentController {
         this.commentMapper = commentMapper;
     }
 
-    @GetMapping("/{eventId}/comments")
+    @GetMapping("/{eventId}")
     public Page<CommentDto> getComments(
             @PathVariable Long eventId,
             @RequestParam(defaultValue = CommentSort.DEFAULT_NAME) CommentSort sort,

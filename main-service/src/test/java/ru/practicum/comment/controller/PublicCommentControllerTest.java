@@ -45,7 +45,7 @@ class PublicCommentControllerTest {
         when(commentService.getPublishedComments(1L, CommentSort.NEWEST, new PageParams(0, 10)))
                 .thenReturn(new PageImpl<>(List.of(buildComment())));
 
-        mockMvc.perform(get("/events/1/comments"))
+        mockMvc.perform(get("/comments/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(5))
                 .andExpect(jsonPath("$.content[0].text").value("Отличное событие"))
@@ -63,7 +63,7 @@ class PublicCommentControllerTest {
         when(commentService.getPublishedComments(1L, CommentSort.OLDEST, new PageParams(2, 5)))
                 .thenReturn(new PageImpl<>(List.of()));
 
-        mockMvc.perform(get("/events/1/comments")
+        mockMvc.perform(get("/comments/1")
                         .param("sort", "OLDEST")
                         .param("from", "2")
                         .param("size", "5"))
@@ -80,7 +80,7 @@ class PublicCommentControllerTest {
         when(commentService.getPublishedComments(99L, CommentSort.NEWEST, new PageParams(0, 10)))
                 .thenThrow(new NotFoundException("Event with id=99 was not found"));
 
-        mockMvc.perform(get("/events/99/comments"))
+        mockMvc.perform(get("/comments/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Event with id=99 was not found"));
@@ -88,7 +88,7 @@ class PublicCommentControllerTest {
 
     @Test
     void getComments_shouldRejectNegativeFrom() throws Exception {
-        mockMvc.perform(get("/events/1/comments").param("from", "-1"))
+        mockMvc.perform(get("/comments/1").param("from", "-1"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
 
@@ -97,7 +97,7 @@ class PublicCommentControllerTest {
 
     @Test
     void getComments_shouldRejectNonPositiveSize() throws Exception {
-        mockMvc.perform(get("/events/1/comments").param("size", "0"))
+        mockMvc.perform(get("/comments/1").param("size", "0"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
 
@@ -106,7 +106,7 @@ class PublicCommentControllerTest {
 
     @Test
     void getComments_shouldRejectUnknownSort() throws Exception {
-        mockMvc.perform(get("/events/1/comments").param("sort", "POPULAR"))
+        mockMvc.perform(get("/comments/1").param("sort", "POPULAR"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
 
