@@ -2,7 +2,6 @@ package ru.practicum.comment.controller;
 
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import ru.practicum.comment.mapper.CommentMapper;
 import ru.practicum.comment.service.PublicCommentService;
 import ru.practicum.utils.params.PageParams;
 
-@Slf4j
 @Validated
 @RestController
 @RequestMapping("/comments")
