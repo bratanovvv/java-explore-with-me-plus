@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Интеграционные тесты Админ: Подборки")
 @Transactional
 @Slf4j
-public class AdminCompilationTest extends CompilationBaseTestClass {
+public class AdminCompilationTest extends BaseTestClass {
     private static final String URL = "/admin/compilations";
     private Set<Long> setEvents = new HashSet<>();
     @Autowired
