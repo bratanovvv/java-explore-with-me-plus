@@ -54,7 +54,8 @@ CREATE TABLE IF NOT EXISTS comments (
     event_id  BIGINT        NOT NULL REFERENCES events (id) ON DELETE CASCADE,
     author_id BIGINT        NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     created   TIMESTAMP     NOT NULL,
-    status    VARCHAR(20)   NOT NULL
+    status    VARCHAR(20)   NOT NULL,
+    rejection_reason VARCHAR(500)
 );
 
 -- Ускоряет поиска комментариев к конкретному событию

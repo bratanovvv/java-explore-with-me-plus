@@ -25,7 +25,8 @@ class CommentMapperTest {
                 .event(Event.builder().id(1L).build())
                 .author(User.builder().id(2L).build())
                 .created(created)
-                .status(CommentStatus.PUBLISHED)
+                .status(CommentStatus.REJECTED)
+                .rejectionReason("Содержит спам")
                 .build();
 
         CommentDto dto = commentMapper.toDto(comment);
@@ -35,7 +36,8 @@ class CommentMapperTest {
         assertThat(dto.getEventId()).isEqualTo(1L);
         assertThat(dto.getAuthorId()).isEqualTo(2L);
         assertThat(dto.getCreated()).isEqualTo(created);
-        assertThat(dto.getStatus()).isEqualTo(CommentStatus.PUBLISHED);
+        assertThat(dto.getStatus()).isEqualTo(CommentStatus.REJECTED);
+        assertThat(dto.getRejectionReason()).isEqualTo("Содержит спам");
     }
 
     @Test

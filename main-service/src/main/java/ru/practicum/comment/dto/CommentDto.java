@@ -20,4 +20,5 @@ public class CommentDto {
     @JsonFormat(pattern = DateFormats.DATE_TIME)
     private LocalDateTime created;
     private CommentStatus status;
+    private String rejectionReason;
 }
