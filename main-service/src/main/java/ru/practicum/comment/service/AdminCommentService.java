@@ -56,14 +56,14 @@ public class AdminCommentService {
 
     @Transactional
     public Comment updateStatus(Long commentId, CommentStatusUpdateRequest request) {
+        if (request.getStatus() != CommentStatus.PUBLISHED && request.getStatus() != CommentStatus.REJECTED) {
+            throw new BadRequestException("Target status must be PUBLISHED or REJECTED");
+        }
+
         Comment comment = getCommentById(commentId);
 
         if (comment.getStatus() != CommentStatus.PENDING) {
             throw new ConflictException("Only comments with status PENDING can be moderated");
-        }
-
-        if (request.getStatus() != CommentStatus.PUBLISHED && request.getStatus() != CommentStatus.REJECTED) {
-            throw new BadRequestException("Target status must be PUBLISHED or REJECTED");
         }
 
         comment.setStatus(request.getStatus());

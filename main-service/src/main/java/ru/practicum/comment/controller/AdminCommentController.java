@@ -3,7 +3,6 @@ package ru.practicum.comment.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -27,9 +26,13 @@ import ru.practicum.utils.params.PageParams;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/comments/admin")
-@RequiredArgsConstructor
+@RequestMapping("/admin/comments")
 public class AdminCommentController {
+
+    public AdminCommentController(AdminCommentService adminCommentService, CommentMapper commentMapper) {
+        this.adminCommentService = adminCommentService;
+        this.commentMapper = commentMapper;
+    }
 
     private final AdminCommentService adminCommentService;
     private final CommentMapper commentMapper;
