@@ -58,7 +58,7 @@ class AdminCommentControllerTest {
         when(adminCommentService.getComments(any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(comment)));
 
-        mockMvc.perform(get("/comments/admin")
+        mockMvc.perform(get("/admin/comments")
                         .param("status", "PENDING")
                         .param("from", "0")
                         .param("size", "10"))
@@ -71,7 +71,7 @@ class AdminCommentControllerTest {
 
     @Test
     void getComments_invalidPagination_shouldReturn400() throws Exception {
-        mockMvc.perform(get("/comments/admin").param("size", "0"))
+        mockMvc.perform(get("/admin/comments").param("size", "0"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(adminCommentService);
     }
@@ -93,7 +93,7 @@ class AdminCommentControllerTest {
 
         when(adminCommentService.updateStatus(eq(1L), any())).thenReturn(updatedComment);
 
-        mockMvc.perform(patch("/comments/admin/{commentId}", 1L)
+        mockMvc.perform(patch("/admin/comments/{commentId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class AdminCommentControllerTest {
 
     @Test
     void updateStatus_withNullStatus_shouldReturn400() throws Exception {
-        mockMvc.perform(patch("/comments/admin/{commentId}", 1L)
+        mockMvc.perform(patch("/admin/comments/{commentId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -118,7 +118,7 @@ class AdminCommentControllerTest {
         when(adminCommentService.updateStatus(eq(1L), any()))
                 .thenThrow(new ConflictException("Only PENDING"));
 
-        mockMvc.perform(patch("/comments/admin/{commentId}", 1L)
+        mockMvc.perform(patch("/admin/comments/{commentId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
@@ -132,7 +132,7 @@ class AdminCommentControllerTest {
         when(adminCommentService.updateStatus(eq(1L), any()))
                 .thenThrow(new BadRequestException("Target must be PUBLISHED or REJECTED"));
 
-        mockMvc.perform(patch("/comments/admin/{commentId}", 1L)
+        mockMvc.perform(patch("/admin/comments/{commentId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -140,7 +140,7 @@ class AdminCommentControllerTest {
 
     @Test
     void delete_shouldReturn204() throws Exception {
-        mockMvc.perform(delete("/comments/admin/{commentId}", 1L))
+        mockMvc.perform(delete("/admin/comments/{commentId}", 1L))
                 .andExpect(status().isNoContent());
         verify(adminCommentService).delete(1L);
     }
@@ -149,7 +149,7 @@ class AdminCommentControllerTest {
     void delete_whenNotFound_shouldReturn404() throws Exception {
         doThrow(new NotFoundException("Not found")).when(adminCommentService).delete(99L);
 
-        mockMvc.perform(delete("/comments/admin/{commentId}", 99L))
+        mockMvc.perform(delete("/admin/comments/{commentId}", 99L))
                 .andExpect(status().isNotFound());
     }
 }

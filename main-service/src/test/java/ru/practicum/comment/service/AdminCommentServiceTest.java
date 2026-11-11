@@ -92,12 +92,8 @@ class AdminCommentServiceTest {
 
     @Test
     void updateStatus_toInvalidStatus_shouldThrowBadRequest() {
-        Comment comment = Comment.builder().id(1L).status(CommentStatus.PENDING).build();
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
-
         request.setStatus(CommentStatus.PENDING);
-
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
         assertThatThrownBy(() -> adminCommentService.updateStatus(1L, request))
                 .isInstanceOf(BadRequestException.class)
@@ -107,6 +103,8 @@ class AdminCommentServiceTest {
     @Test
     void updateStatus_whenNotFound_shouldThrowNotFound() {
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
+        request.setStatus(CommentStatus.PUBLISHED);
+
         when(commentRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> adminCommentService.updateStatus(99L, request))
