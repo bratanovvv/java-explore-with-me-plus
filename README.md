@@ -1,7 +1,7 @@
 # Explore With Me Plus
 
 Афиша событий: пользователи создают события (выставки, походы в кино, поездки),
-находят компанию и подают заявки на участие и оставляют комментарии к событиям. 
+находят компанию и подают заявки на участие и оставляют комментарии к событиям.
 Администраторы модерируют события и комментарии, ведут категории, подборки и пользователей.
 
 ## Сервисы
@@ -75,7 +75,7 @@ erDiagram
         bigint compilation_id "PK, FK"
         bigint event_id "PK, FK"
     }
-    
+
     COMMENTS {
         bigint id "PK"
         varchar text "2000"
@@ -83,6 +83,7 @@ erDiagram
         bigint author_id "FK"
         timestamp created
         varchar status "20"
+        varchar rejection_reason "500"
     }
 ```
 

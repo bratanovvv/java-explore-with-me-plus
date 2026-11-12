@@ -2,9 +2,9 @@ package ru.practicum.comment.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.comment.dto.query.CommentSort;
 import ru.practicum.comment.dto.request.CommentRequestDto;
 import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.model.CommentStatus;
@@ -15,11 +15,10 @@ import ru.practicum.event.service.EventService;
 import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
 import ru.practicum.utils.error.exception.ConflictException;
+import ru.practicum.utils.error.exception.ForbiddenException;
 import ru.practicum.utils.error.exception.NotFoundException;
 import ru.practicum.utils.params.PageParams;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,7 +47,6 @@ public class PrivateCommentService {
         Comment comment = Comment.builder()
                 .author(writer)
                 .event(event)
-                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .status(CommentStatus.PENDING)
                 .text(dto.getText())
                 .build();
@@ -60,19 +58,19 @@ public class PrivateCommentService {
 
     @Transactional
     public void deleteCommentByUser(Long commentId, Long userId) {
-        userService.getUser(userId);//проверка на существования пользователя
+        userService.getUser(userId);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment with id = " + commentId + " was not found"));
-        if (Objects.equals(comment.getAuthor().getId(), userId)) {
-            commentRepository.delete(comment);
-        } else {
-            throw new NotFoundException("You can only delete your own comments.");
+        if (!Objects.equals(comment.getAuthor().getId(), userId)) {
+            throw new ForbiddenException("Comment with id = " + commentId + " belongs to another user");
         }
+        commentRepository.delete(comment);
+        log.debug("Пользователь id={} удалил комментарий id={}", userId, commentId);
     }
 
     public List<Comment> getCommentsByUser(Long userId, PageParams params) {
         User author = userService.getUser(userId);
-        Pageable pageable = params.toPageable(Sort.by(Sort.Direction.DESC, "created", "id"));
+        Pageable pageable = params.toPageable(CommentSort.NEWEST.toSort());
         return commentRepository.findAllByAuthor(author, pageable);
     }
 }

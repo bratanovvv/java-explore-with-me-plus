@@ -54,7 +54,7 @@ class AdminCommentServiceTest {
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
         request.setStatus(CommentStatus.PUBLISHED);
 
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(comment));
 
         Comment result = adminCommentService.updateStatus(1L, request);
 
@@ -69,7 +69,7 @@ class AdminCommentServiceTest {
         request.setStatus(CommentStatus.REJECTED);
         request.setRejectionReason("Спам");
 
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(comment));
 
         Comment result = adminCommentService.updateStatus(1L, request);
 
@@ -83,7 +83,7 @@ class AdminCommentServiceTest {
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
         request.setStatus(CommentStatus.REJECTED);
 
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(comment));
 
         assertThatThrownBy(() -> adminCommentService.updateStatus(1L, request))
                 .isInstanceOf(ConflictException.class)
@@ -105,7 +105,7 @@ class AdminCommentServiceTest {
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
         request.setStatus(CommentStatus.PUBLISHED);
 
-        when(commentRepository.findById(99L)).thenReturn(Optional.empty());
+        when(commentRepository.findByIdWithLock(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> adminCommentService.updateStatus(99L, request))
                 .isInstanceOf(NotFoundException.class);

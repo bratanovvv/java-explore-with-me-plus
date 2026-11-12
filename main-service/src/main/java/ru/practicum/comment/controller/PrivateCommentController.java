@@ -3,6 +3,7 @@ package ru.practicum.comment.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +23,7 @@ import ru.practicum.utils.params.PageParams;
 
 import java.util.List;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/users/{userId}/comments")
@@ -40,6 +42,7 @@ public class PrivateCommentController {
     public CommentDto createComment(@PathVariable Long userId,
                                     @RequestParam(name = "eventId", required = true) Long eventId,
                                     @RequestBody @Valid CommentRequestDto dto) {
+        log.debug("Создание комментария: userId={}, eventId={}", userId, eventId);
         return commentMapper.toDto(commentService.createComment(userId, eventId, dto));
     }
 
@@ -47,13 +50,14 @@ public class PrivateCommentController {
     public List<CommentDto> getComments(@PathVariable Long userId,
                                         @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
                                         @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size) {
-        return commentMapper.toDtoList(commentService.getCommentsByUser(userId, new PageParams(from, size))
-        );
+        log.debug("Получение комментариев пользователя: userId={}, from={}, size={}", userId, from, size);
+        return commentMapper.toDtoList(commentService.getCommentsByUser(userId, new PageParams(from, size)));
     }
 
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable Long commentId, @PathVariable Long userId) {
+        log.debug("Удаление комментария: userId={}, commentId={}", userId, commentId);
         commentService.deleteCommentByUser(commentId, userId);
     }
 }

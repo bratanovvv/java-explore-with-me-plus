@@ -17,6 +17,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
@@ -48,7 +49,8 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Column(name = "created", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
     @Enumerated(EnumType.STRING)

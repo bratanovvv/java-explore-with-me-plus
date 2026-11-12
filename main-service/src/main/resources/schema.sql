@@ -58,8 +58,12 @@ CREATE TABLE IF NOT EXISTS comments (
     rejection_reason VARCHAR(500)
 );
 
--- Ускоряет поиска комментариев к конкретному событию
-CREATE INDEX IF NOT EXISTS idx_comments_event ON comments (event_id);
+-- Ускоряет публичный список комментариев события (фильтр event_id + status).
+CREATE INDEX IF NOT EXISTS idx_comments_event_status ON comments (event_id, status);
+-- Ускоряет админский список с фильтром по статусу.
+CREATE INDEX IF NOT EXISTS idx_comments_status ON comments (status);
+-- Ускоряет выдачу комментариев автора (GET /users/{userId}/comments).
+CREATE INDEX IF NOT EXISTS idx_comments_author ON comments (author_id);
 
 -- Ускоряет публичный поиск (state = PUBLISHED) и фильтрацию по датам.
 CREATE INDEX IF NOT EXISTS idx_events_state      ON events (state);

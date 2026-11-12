@@ -2,7 +2,6 @@ package ru.practicum.comment;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.request.CommentRequestDto;
 import ru.practicum.compilation.BaseTestClass;
+import ru.practicum.user.dto.UserDto;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,14 +48,19 @@ public class PrivateCommentTest extends BaseTestClass {
         createComment("Первый!")
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.text").value("Первый!"))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.created").isNotEmpty());
     }
 
-    private @NonNull ResultActions createComment(String text) throws Exception {
+    private ResultActions createComment(String text) throws Exception {
+        return createComment(userId, text);
+    }
+
+    private ResultActions createComment(Long authorId, String text) throws Exception {
         CommentRequestDto comment = new CommentRequestDto();
         comment.setText(text);
 
-        return mockMvc.perform(post("/users/" + userId + "/comments")
+        return mockMvc.perform(post("/users/" + authorId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("eventId", eventId.toString())
                         .content(objectMapper.writeValueAsString(comment)))
@@ -69,7 +74,7 @@ public class PrivateCommentTest extends BaseTestClass {
     }
 
     @Test
-    public void testCreateCommendWhenUserNotExist_ShouldReturnNotFound() throws Exception {
+    public void testCreateCommentWhenUserNotExist_ShouldReturnNotFound() throws Exception {
         CommentRequestDto comment = new CommentRequestDto();
         comment.setText("Первый!");
         //задаем не существуешего пользователся
@@ -95,7 +100,7 @@ public class PrivateCommentTest extends BaseTestClass {
     }
 
     @Test
-    public void testCreateCommentWhenEventNotPublished_ShouldReturnNotFound() throws Exception {
+    public void testCreateCommentWhenEventNotPublished_ShouldReturnConflict() throws Exception {
         CommentRequestDto comment = new CommentRequestDto();
         comment.setText("Первый!");
 
@@ -136,7 +141,7 @@ public class PrivateCommentTest extends BaseTestClass {
         publishEvent(eventId);
         long id = getIdFromObject(createComment("Ghbdtn!"));
         createComment("Привет!");
-        log.info("User = {} , Event1 = {} , Event2 = {}",userId,eventId,id);
+        log.info("User = {} , Event1 = {} , Event2 = {}", userId, eventId, id);
         mockMvc.perform(delete("/users/" + userId + "/comments" + "/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
@@ -148,22 +153,29 @@ public class PrivateCommentTest extends BaseTestClass {
     }
 
     @Test
-    public void testDeleteCommentWhenUserNotAuthor_ShouldReturn404() throws Exception {
+    public void testDeleteCommentWhenUserNotAuthor_ShouldReturnForbidden() throws Exception {
         publishEvent(eventId);
-        long id = getIdFromObject(createComment("Ghbdtn!"));
-        createComment("Привет!");
-        userId++;
-        mockMvc.perform(delete("/users/" + userId + "/comments" + "/" + id)
+        Long strangerId = createStrangerUser();
+        long foreignCommentId = getIdFromObject(createComment(strangerId, "Чужой комментарий"));
+
+        mockMvc.perform(delete("/users/" + userId + "/comments/" + foreignCommentId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-        userId--;
-        mockMvc.perform(get("/users/" + userId + "/comments")
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/users/" + strangerId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[1].text").value("Ghbdtn!"))
-                .andExpect(jsonPath("$[0].text").value("Привет!"));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].text").value("Чужой комментарий"));
+    }
+
+    private Long createStrangerUser() throws Exception {
+        return getIdFromObject(mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(UserDto.builder()
+                                .name("Пётр Иванов")
+                                .email("petr.ivanov@practicummail.ru")
+                                .build())))
+                .andExpect(status().isCreated()));
     }
 }
-
-

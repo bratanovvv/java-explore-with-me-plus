@@ -29,13 +29,13 @@ import ru.practicum.utils.params.PageParams;
 @RequestMapping("/admin/comments")
 public class AdminCommentController {
 
+    private final AdminCommentService adminCommentService;
+    private final CommentMapper commentMapper;
+
     public AdminCommentController(AdminCommentService adminCommentService, CommentMapper commentMapper) {
         this.adminCommentService = adminCommentService;
         this.commentMapper = commentMapper;
     }
-
-    private final AdminCommentService adminCommentService;
-    private final CommentMapper commentMapper;
 
     @GetMapping
     public Page<CommentDto> getComments(
@@ -43,6 +43,8 @@ public class AdminCommentController {
             @RequestParam(required = false) Long eventId,
             @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
             @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size) {
+        log.debug("Админский список комментариев: status={}, eventId={}, from={}, size={}",
+                status, eventId, from, size);
         return adminCommentService.getComments(status, eventId, new PageParams(from, size))
                 .map(commentMapper::toDto);
     }
@@ -51,12 +53,14 @@ public class AdminCommentController {
     public CommentDto updateStatus(
             @PathVariable Long commentId,
             @Valid @RequestBody CommentStatusUpdateRequest request) {
+        log.debug("Модерация комментария: commentId={}, status={}", commentId, request.getStatus());
         return commentMapper.toDto(adminCommentService.updateStatus(commentId, request));
     }
 
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long commentId) {
+        log.debug("Удаление комментария администратором: commentId={}", commentId);
         adminCommentService.delete(commentId);
     }
 }

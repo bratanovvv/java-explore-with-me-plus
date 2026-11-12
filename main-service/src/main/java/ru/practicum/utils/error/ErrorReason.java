@@ -12,6 +12,7 @@ public enum ErrorReason {
 
     BAD_REQUEST("Incorrectly made request."),
     NOT_FOUND("The required object was not found."),
+    FORBIDDEN("The operation is not allowed for the current user."),
     CONFLICT("For the requested operation the conditions are not met."),
     INTEGRITY_CONSTRAINT("Integrity constraint has been violated."),
     INTERNAL_SERVER_ERROR("Unexpected error.");

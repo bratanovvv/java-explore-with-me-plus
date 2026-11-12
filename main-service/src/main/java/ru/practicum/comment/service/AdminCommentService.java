@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.comment.dto.query.CommentSort;
 import ru.practicum.comment.dto.request.CommentStatusUpdateRequest;
 import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.model.CommentStatus;
@@ -30,9 +30,7 @@ public class AdminCommentService {
     private final CommentRepository commentRepository;
 
     public Page<Comment> getComments(CommentStatus status, Long eventId, PageParams pageParams) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "created")
-                .and(Sort.by(Sort.Direction.DESC, "id"));
-        Pageable pageable = pageParams.toPageable(sort);
+        Pageable pageable = pageParams.toPageable(CommentSort.NEWEST.toSort());
 
         Specification<Comment> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -60,7 +58,7 @@ public class AdminCommentService {
             throw new BadRequestException("Target status must be PUBLISHED or REJECTED");
         }
 
-        Comment comment = getCommentById(commentId);
+        Comment comment = getCommentForUpdate(commentId);
 
         if (comment.getStatus() != CommentStatus.PENDING) {
             throw new ConflictException("Only comments with status PENDING can be moderated");
@@ -83,6 +81,11 @@ public class AdminCommentService {
         Comment comment = getCommentById(commentId);
         commentRepository.delete(comment);
         log.debug("Админ удалил комментарий id={}", commentId);
+    }
+
+    private Comment getCommentForUpdate(Long commentId) {
+        return commentRepository.findByIdWithLock(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment with id=" + commentId + " was not found"));
     }
 
     private Comment getCommentById(Long commentId) {

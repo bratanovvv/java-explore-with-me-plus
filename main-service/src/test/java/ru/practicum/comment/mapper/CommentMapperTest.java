@@ -61,4 +61,33 @@ class CommentMapperTest {
     void toDtoList_shouldReturnEmptyList() {
         assertThat(commentMapper.toDtoList(List.of())).isEmpty();
     }
+
+    @Test
+    void toEntity_shouldMapFieldsAndReferences() {
+        LocalDateTime created = LocalDateTime.of(2026, 11, 8, 20, 10);
+        CommentDto dto = CommentDto.builder()
+                .id(5L)
+                .text("Отличное событие")
+                .eventId(1L)
+                .authorId(2L)
+                .created(created)
+                .status(CommentStatus.REJECTED)
+                .rejectionReason("Содержит спам")
+                .build();
+
+        Comment comment = commentMapper.toEntity(dto);
+
+        assertThat(comment.getId()).isEqualTo(5L);
+        assertThat(comment.getText()).isEqualTo("Отличное событие");
+        assertThat(comment.getEvent().getId()).isEqualTo(1L);
+        assertThat(comment.getAuthor().getId()).isEqualTo(2L);
+        assertThat(comment.getCreated()).isEqualTo(created);
+        assertThat(comment.getStatus()).isEqualTo(CommentStatus.REJECTED);
+        assertThat(comment.getRejectionReason()).isEqualTo("Содержит спам");
+    }
+
+    @Test
+    void toEntity_shouldReturnNullForNullDto() {
+        assertThat(commentMapper.toEntity(null)).isNull();
+    }
 }
