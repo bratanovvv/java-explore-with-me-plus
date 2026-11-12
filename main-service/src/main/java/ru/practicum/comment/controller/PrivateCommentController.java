@@ -1,6 +1,8 @@
 package ru.practicum.comment.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.comment.dto.CommentDto;
-import ru.practicum.comment.dto.CommentRequestDto;
+import ru.practicum.comment.dto.request.CommentRequestDto;
 import ru.practicum.comment.mapper.CommentMapper;
 import ru.practicum.comment.service.PrivateCommentService;
 import ru.practicum.utils.params.PageParams;
@@ -43,9 +45,9 @@ public class PrivateCommentController {
 
     @GetMapping
     public List<CommentDto> getComments(@PathVariable Long userId,
-                                        @RequestParam(defaultValue = PageParams.DEFAULT_FROM) int from,
-                                        @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) int size) {
-        return commentMapper.toDtoList(commentService.getCommentByUser(userId,new PageParams(from, size))
+                                        @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
+                                        @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size) {
+        return commentMapper.toDtoList(commentService.getCommentsByUser(userId, new PageParams(from, size))
         );
     }
 

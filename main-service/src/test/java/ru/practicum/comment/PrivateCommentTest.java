@@ -12,7 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.comment.dto.CommentRequestDto;
+import ru.practicum.comment.dto.request.CommentRequestDto;
 import ru.practicum.compilation.BaseTestClass;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -42,7 +42,6 @@ public class PrivateCommentTest extends BaseTestClass {
 
     @Test
     public void testCreateComment_shouldReturnOkAndNewCommentId() throws Exception {
-
 
         publishEvent(eventId);
 
@@ -104,7 +103,7 @@ public class PrivateCommentTest extends BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("eventId", eventId.toString())
                         .content(objectMapper.writeValueAsString(comment)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -118,7 +117,6 @@ public class PrivateCommentTest extends BaseTestClass {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].text").value("Первый!"));
-
     }
 
     @Test
@@ -138,11 +136,10 @@ public class PrivateCommentTest extends BaseTestClass {
         publishEvent(eventId);
         long id = getIdFromObject(createComment("Ghbdtn!"));
         createComment("Привет!");
-
+        log.info("User = {} , Event1 = {} , Event2 = {}",userId,eventId,id);
         mockMvc.perform(delete("/users/" + userId + "/comments" + "/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
-
         mockMvc.perform(get("/users/" + userId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
