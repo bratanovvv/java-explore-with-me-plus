@@ -19,6 +19,7 @@ public class CommentMapper {
                 .authorId(comment.getAuthor().getId())
                 .created(comment.getCreated())
                 .status(comment.getStatus())
+                .rejectionReason(comment.getRejectionReason())
                 .build();
     }
 

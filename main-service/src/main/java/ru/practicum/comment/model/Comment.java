@@ -54,4 +54,7 @@ public class Comment {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private CommentStatus status;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
 }

@@ -1,4 +1,4 @@
-package ru.practicum.comment.dto;
+package ru.practicum.comment.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
