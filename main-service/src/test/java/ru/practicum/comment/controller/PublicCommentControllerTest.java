@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.comment.dto.query.CommentSort;
@@ -47,13 +48,14 @@ class PublicCommentControllerTest {
 
         mockMvc.perform(get("/comments/1"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].id").value(5))
                 .andExpect(jsonPath("$.content[0].text").value("Отличное событие"))
                 .andExpect(jsonPath("$.content[0].eventId").value(1))
                 .andExpect(jsonPath("$.content[0].authorId").value(2))
-                .andExpect(jsonPath("$.content[0].status").value("PUBLISHED"))
                 .andExpect(jsonPath("$.content[0].created").value("2026-11-08 20:10:00"))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.content[0].status").doesNotExist())
+                .andExpect(jsonPath("$.content[0].rejectionReason").doesNotExist());
 
         verify(commentService).getPublishedComments(1L, CommentSort.NEWEST, new PageParams(0, 10));
     }
@@ -61,7 +63,7 @@ class PublicCommentControllerTest {
     @Test
     void getComments_shouldPassSortAndPagination() throws Exception {
         when(commentService.getPublishedComments(1L, CommentSort.OLDEST, new PageParams(2, 5)))
-                .thenReturn(new PageImpl<>(List.of()));
+                .thenReturn(Page.empty());
 
         mockMvc.perform(get("/comments/1")
                         .param("sort", "OLDEST")
@@ -69,8 +71,7 @@ class PublicCommentControllerTest {
                         .param("size", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content").isEmpty())
-                .andExpect(jsonPath("$.totalElements").value(0));
+                .andExpect(jsonPath("$.content").isEmpty());
 
         verify(commentService).getPublishedComments(1L, CommentSort.OLDEST, new PageParams(2, 5));
     }
@@ -87,19 +88,21 @@ class PublicCommentControllerTest {
     }
 
     @Test
-    void getComments_shouldRejectNegativeFrom() throws Exception {
+    void getComments_shouldRejectNegativeFromWithEnglishMessage() throws Exception {
         mockMvc.perform(get("/comments/1").param("from", "-1"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
+                .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0]").value("getComments.from: must be greater than or equal to 0"));
 
         verify(commentService, never()).getPublishedComments(any(), any(), any());
     }
 
     @Test
-    void getComments_shouldRejectNonPositiveSize() throws Exception {
+    void getComments_shouldRejectNonPositiveSizeWithEnglishMessage() throws Exception {
         mockMvc.perform(get("/comments/1").param("size", "0"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
+                .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0]").value("getComments.size: must be greater than 0"));
 
         verify(commentService, never()).getPublishedComments(any(), any(), any());
     }

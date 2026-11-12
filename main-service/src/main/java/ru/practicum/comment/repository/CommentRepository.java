@@ -14,12 +14,11 @@ import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.model.CommentStatus;
 import ru.practicum.user.model.User;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
 
-    List<Comment> findAllByAuthor(User author, Pageable pageable);
+    Page<Comment> findAllByAuthor(User author, Pageable pageable);
 
     Page<Comment> findAllByEventIdAndStatus(Long eventId, CommentStatus status, Pageable pageable);
 

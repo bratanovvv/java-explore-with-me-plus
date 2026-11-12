@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.comment.dto.request.CommentStatusUpdateRequest;
@@ -37,14 +38,14 @@ class AdminCommentServiceTest {
     private AdminCommentService adminCommentService;
 
     @Test
-    void getComments_shouldReturnPage() {
+    void getComments_shouldReturnList() {
         Comment comment = new Comment();
         when(commentRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(comment)));
 
-        var result = adminCommentService.getComments(CommentStatus.PENDING, 1L, new PageParams(0, 10));
+        Page<Comment> result = adminCommentService.getComments(CommentStatus.PENDING, 1L, new PageParams(0, 10));
 
-        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent()).containsExactly(comment);
         verify(commentRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class));
     }
 

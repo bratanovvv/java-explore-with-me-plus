@@ -120,8 +120,8 @@ public class PrivateCommentTest extends BaseTestClass {
         mockMvc.perform(get("/users/" + userId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[1].text").value("Первый!"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[1].text").value("Первый!"));
     }
 
     @Test
@@ -148,8 +148,8 @@ public class PrivateCommentTest extends BaseTestClass {
         mockMvc.perform(get("/users/" + userId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].text").value("Привет!"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].text").value("Привет!"));
     }
 
     @Test
@@ -165,8 +165,8 @@ public class PrivateCommentTest extends BaseTestClass {
         mockMvc.perform(get("/users/" + strangerId + "/comments")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].text").value("Чужой комментарий"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].text").value("Чужой комментарий"));
     }
 
     private Long createStrangerUser() throws Exception {

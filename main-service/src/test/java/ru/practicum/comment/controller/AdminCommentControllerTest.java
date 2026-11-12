@@ -43,17 +43,8 @@ class AdminCommentControllerTest {
     private AdminCommentService adminCommentService;
 
     @Test
-    void getComments_shouldReturn200AndPage() throws Exception {
-        Event event = Event.builder().id(10L).build();
-        User author = User.builder().id(20L).build();
-
-        Comment comment = Comment.builder()
-                .id(1L)
-                .text("Текст")
-                .status(CommentStatus.PENDING)
-                .event(event)
-                .author(author)
-                .build();
+    void getComments_shouldReturn200AndList() throws Exception {
+        Comment comment = buildComment();
 
         when(adminCommentService.getComments(any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(comment)));
@@ -63,16 +54,19 @@ class AdminCommentControllerTest {
                         .param("from", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].id").value(1L))
                 .andExpect(jsonPath("$.content[0].eventId").value(10L))
                 .andExpect(jsonPath("$.content[0].authorId").value(20L))
-                .andExpect(jsonPath("$.content[0].status").value("PENDING"));
+                .andExpect(jsonPath("$.content[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.content[0].rejectionReason").doesNotExist());
     }
 
     @Test
     void getComments_invalidPagination_shouldReturn400() throws Exception {
         mockMvc.perform(get("/admin/comments").param("size", "0"))
                 .andExpect(status().isBadRequest());
+
         verifyNoInteractions(adminCommentService);
     }
 
@@ -81,15 +75,8 @@ class AdminCommentControllerTest {
         CommentStatusUpdateRequest request = new CommentStatusUpdateRequest();
         request.setStatus(CommentStatus.PUBLISHED);
 
-        Event event = Event.builder().id(10L).build();
-        User author = User.builder().id(20L).build();
-
-        Comment updatedComment = Comment.builder()
-                .id(1L)
-                .status(CommentStatus.PUBLISHED)
-                .event(event)
-                .author(author)
-                .build();
+        Comment updatedComment = buildComment();
+        updatedComment.setStatus(CommentStatus.PUBLISHED);
 
         when(adminCommentService.updateStatus(eq(1L), any())).thenReturn(updatedComment);
 
@@ -107,6 +94,7 @@ class AdminCommentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
+
         verifyNoInteractions(adminCommentService);
     }
 
@@ -151,5 +139,15 @@ class AdminCommentControllerTest {
 
         mockMvc.perform(delete("/admin/comments/{commentId}", 99L))
                 .andExpect(status().isNotFound());
+    }
+
+    private Comment buildComment() {
+        return Comment.builder()
+                .id(1L)
+                .text("Текст")
+                .status(CommentStatus.PENDING)
+                .event(Event.builder().id(10L).build())
+                .author(User.builder().id(20L).build())
+                .build();
     }
 }

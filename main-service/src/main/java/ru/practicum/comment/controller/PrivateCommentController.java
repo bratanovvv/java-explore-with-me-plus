@@ -1,9 +1,11 @@
 package ru.practicum.comment.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,8 +23,6 @@ import ru.practicum.comment.mapper.CommentMapper;
 import ru.practicum.comment.service.PrivateCommentService;
 import ru.practicum.utils.params.PageParams;
 
-import java.util.List;
-
 @Slf4j
 @Validated
 @RestController
@@ -39,6 +39,7 @@ public class PrivateCommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @JsonView(CommentDto.ModeratedComment.class)
     public CommentDto createComment(@PathVariable Long userId,
                                     @RequestParam(name = "eventId", required = true) Long eventId,
                                     @RequestBody @Valid CommentRequestDto dto) {
@@ -47,11 +48,13 @@ public class PrivateCommentController {
     }
 
     @GetMapping
-    public List<CommentDto> getComments(@PathVariable Long userId,
+    @JsonView(CommentDto.ModeratedComment.class)
+    public Page<CommentDto> getComments(@PathVariable Long userId,
                                         @RequestParam(defaultValue = PageParams.DEFAULT_FROM) @PositiveOrZero int from,
                                         @RequestParam(defaultValue = PageParams.DEFAULT_SIZE) @Positive int size) {
         log.debug("Получение комментариев пользователя: userId={}, from={}, size={}", userId, from, size);
-        return commentMapper.toDtoList(commentService.getCommentsByUser(userId, new PageParams(from, size)));
+        return commentService.getCommentsByUser(userId, new PageParams(from, size))
+                .map(commentMapper::toDto);
     }
 
     @DeleteMapping("/{commentId}")

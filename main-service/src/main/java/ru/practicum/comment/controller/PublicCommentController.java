@@ -1,5 +1,6 @@
 package ru.practicum.comment.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class PublicCommentController {
     }
 
     @GetMapping("/{eventId}")
+    @JsonView(CommentDto.PublicComment.class)
     public Page<CommentDto> getComments(
             @PathVariable Long eventId,
             @RequestParam(defaultValue = CommentSort.DEFAULT_NAME) CommentSort sort,

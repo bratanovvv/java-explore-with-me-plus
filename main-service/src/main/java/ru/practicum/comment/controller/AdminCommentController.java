@@ -1,5 +1,6 @@
 package ru.practicum.comment.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -38,6 +39,7 @@ public class AdminCommentController {
     }
 
     @GetMapping
+    @JsonView(CommentDto.ModeratedComment.class)
     public Page<CommentDto> getComments(
             @RequestParam(required = false) CommentStatus status,
             @RequestParam(required = false) Long eventId,
@@ -50,6 +52,7 @@ public class AdminCommentController {
     }
 
     @PatchMapping("/{commentId}")
+    @JsonView(CommentDto.ModeratedComment.class)
     public CommentDto updateStatus(
             @PathVariable Long commentId,
             @Valid @RequestBody CommentStatusUpdateRequest request) {

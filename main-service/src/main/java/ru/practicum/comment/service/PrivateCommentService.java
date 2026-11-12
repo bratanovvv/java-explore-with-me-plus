@@ -1,6 +1,7 @@
 package ru.practicum.comment.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,6 @@ import ru.practicum.utils.error.exception.ForbiddenException;
 import ru.practicum.utils.error.exception.NotFoundException;
 import ru.practicum.utils.params.PageParams;
 
-import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -68,7 +68,7 @@ public class PrivateCommentService {
         log.debug("Пользователь id={} удалил комментарий id={}", userId, commentId);
     }
 
-    public List<Comment> getCommentsByUser(Long userId, PageParams params) {
+    public Page<Comment> getCommentsByUser(Long userId, PageParams params) {
         User author = userService.getUser(userId);
         Pageable pageable = params.toPageable(CommentSort.NEWEST.toSort());
         return commentRepository.findAllByAuthor(author, pageable);
