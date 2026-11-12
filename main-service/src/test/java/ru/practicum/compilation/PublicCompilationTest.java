@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DisplayName("Интеграционные тесты Пабилк Подборки")
 @Transactional
-public class PublicCompilationTest extends CompilationBaseTestClass {
+public class PublicCompilationTest extends BaseTestClass {
     public static final String URL = "/compilations";
     private final Set<Long> setEvents = new HashSet<>();
     private long compId = 1;

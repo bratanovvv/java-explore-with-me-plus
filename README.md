@@ -1,8 +1,8 @@
 # Explore With Me Plus
 
 Афиша событий: пользователи создают события (выставки, походы в кино, поездки),
-находят компанию и подают заявки на участие. Администраторы модерируют события,
-ведут категории, подборки и пользователей.
+находят компанию и подают заявки на участие и оставляют комментарии к событиям.
+Администраторы модерируют события и комментарии, ведут категории, подборки и пользователей.
 
 ## Сервисы
 
@@ -25,6 +25,8 @@ erDiagram
     EVENTS ||--o{ REQUESTS : "event_id"
     COMPILATIONS ||--o{ COMPILATION_EVENTS : "compilation_id"
     EVENTS ||--o{ COMPILATION_EVENTS : "event_id"
+    USERS ||--o{ COMMENTS : "author_id"
+    EVENTS ||--o{ COMMENTS : "event_id"
 
     USERS {
         bigint id "PK"
@@ -72,6 +74,16 @@ erDiagram
     COMPILATION_EVENTS {
         bigint compilation_id "PK, FK"
         bigint event_id "PK, FK"
+    }
+
+    COMMENTS {
+        bigint id "PK"
+        varchar text "2000"
+        bigint event_id "FK"
+        bigint author_id "FK"
+        timestamp created
+        varchar status "20"
+        varchar rejection_reason "500"
     }
 ```
 
