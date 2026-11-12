@@ -26,13 +26,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Slf4j
-public class CompilationBaseTestClass {
+public class BaseTestClass {
 
     @Autowired
     protected MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
 
     private final EventRequestDto event = new EventRequestDto();
 
